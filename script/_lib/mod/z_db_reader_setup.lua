@@ -80,6 +80,94 @@ local function _setup_logging()
 end
 
 
+---@param registry DBRegistry
+---@param db_reader DBReader
+---@param cache DBReaderSessionCache
+---@param l LoggingSetup
+local function _setup_mct_support(registry, db_reader, cache, l)
+    local mct, mod
+    local mct_mod_key, log_lvl_option, trigger_option = 'db_reader', 'logging_lvl', 'reload_cache_trigger'
+
+    local current_checkbox_value, previous_checkbox_value
+    local log_lvl_dropdown, log_lvl_name, log_lvl, is_changed
+
+    core:add_listener(
+        "DBReaderMctListener",
+        "MctInitialized",
+        true,
+        function(context)
+            mct = context:mct()
+            mod = mct:get_mod_by_key(mct_mod_key)
+            mod:set_version(db_reader.version)
+
+            previous_checkbox_value = mod:get_option_by_key(trigger_option):get_finalized_setting()
+
+            log_lvl_dropdown = mod:get_option_by_key(log_lvl_option)
+            
+            if l.logging_exported then
+                log_lvl_name = logging.lvl_lookup[l.logger:get_current_log_lvl()]
+                log_lvl_dropdown:set_default_value(log_lvl_name)
+                log_lvl_dropdown:set_uic_visibility(true)
+                
+                mod:set_log_file_path(l.logger._log_file_name)
+                l.info('db_reader: logging options enabled [MCT]')
+            else
+                log_lvl_dropdown:set_uic_visibility(false)
+                l.info('db_reader: logging options disabled (logging library not found) [MCT]')
+            end
+        end,
+        false  -- remove after first execution - it looks like this event will not being triggered again
+    )
+    l.info('db_reader: added MctInitialized listener')
+
+
+    local registry_data, db_reader_data
+    local function update_db_and_cache()
+        db_reader:reload()
+        
+        registry_data = registry:get_data_for_cache()
+        db_reader_data = db_reader:get_data_for_cache()
+        cache:set(registry_data, db_reader_data)
+
+        l.info('db_reader: reloaded')
+    end
+
+
+    core:add_listener(
+        "DBReaderMctReloadDbTriggerListener",
+        "MctOptionSettingFinalized",
+        true,
+        function(context)
+            mct = context:mct()
+            mod = mct:get_mod_by_key(mct_mod_key)
+            current_checkbox_value = mod:get_option_by_key(trigger_option):get_finalized_setting()
+
+            if previous_checkbox_value ~= current_checkbox_value then
+                update_db_and_cache()
+            end
+
+
+            if l.logging_exported then
+                log_lvl_name = mod:get_option_by_key(log_lvl_option):get_finalized_setting()
+                log_lvl = logging.lvl[log_lvl_name]
+
+                if log_lvl ~= l.logger:get_current_log_lvl() then
+                    is_changed = l.logger:set_log_lvl(log_lvl)
+                    if is_changed then
+                        l.info('db_reader: logging lvl changed to "' .. log_lvl_name .. '"')
+                    else
+                        l.info('db_reader: failed to set log lvl - "' .. log_lvl_name .. '" (value: ' .. tostring(log_lvl) .. ')')
+                    end
+                end 
+            end
+        end,
+        true
+    )
+    l.info('db_reader: added MctOptionSettingFinalized listener')
+end
+
+
+
 --[[
 ======================================================================================
                                        Setup
@@ -121,8 +209,13 @@ local function _setup()
         'ScriptEventAllModsLoaded',
         true,
         function()
+            l.info('db_reader: creating...')
             db_reader = DBReader.new(db_address, registry, extractors, l.logger)
             l.info('db_reader: created')
+
+            l.info('db_reader: adding MCT support...')
+            _setup_mct_support(registry, db_reader, cache, l)
+            l.info('db_reader: MCT support added')
 
             l.info('db_reader: trigger event ' .. created_event .. '...')
             core:trigger_custom_event(created_event, {get_db_reader=db_reader})
