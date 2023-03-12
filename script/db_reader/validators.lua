@@ -1,0 +1,264 @@
+---@param columns string[]
+---@param key_column_id number
+---@param logger LoggerCls
+---@return boolean is_valid
+local function validate_columns(columns, key_column_id, logger)
+    if columns == nil then
+        logger:error('invalid argument - columns: missing')
+        return false
+    end
+
+    if not is_table(columns) then
+        logger:error('invalid argument - columns: should be string array (Table<number, string>), but not', type(columns))
+        return false
+    end
+
+    for i, column in pairs(columns) do
+        if not is_number(i) then
+            logger:error('invalid columns table structure - lua-table key type should be number, but not', type(i))
+            logger:info('should be string array (Table<number, string>)')
+            return false
+        end
+
+        if not is_string(column) then
+            logger:error('invalid columns table structure - lua-table value type should be string, but not', type(column))
+            logger:info('should be string array (Table<number, string>)')
+            return false
+        end
+    end
+
+    if #columns == 0 then
+        logger:error('invalid argument - columns: zero-length')
+        return false
+    end
+
+    if not is_number(key_column_id) or key_column_id <= 0 then
+        logger:error('invalid argument - key_column_id: should be positive number, less or equal then number of columns (' .. #columns .. '), but not', key_column_id, type(key_column_id))
+        return false
+    end
+
+    if columns[key_column_id] == nil then
+        logger:error('invalid argument - key_column_id: column not found with value', key_column_id)
+        return false
+    end
+
+    return true
+end
+
+
+---validate returned rows 
+---@param table_meta DBTableMeta
+---@param results TableData | nil
+---@param logger LoggerCls
+---@return boolean is_valid, integer? rows_count
+local function check_builder_results(table_meta, results, logger)
+    if results == nil then
+        logger:error('builder didnt provide a results - something goes wrong?')
+        return false
+    end
+
+    if not is_table(results) then
+        logger:error('invalid result type:', type(results)):info('expected structure:  {columns: string[], rows: any[], key_column_id: number}' )
+        return false    
+    end
+
+    local rows = results.rows
+
+    if not is_table(rows) then
+        logger:error('rows is not a table'):info('expected structure: Table<number, Table<number, string | number | boolean> >')
+        return false
+    end
+
+    if #rows == 0 then
+        logger:error('no rows (zero-length array)')
+        return false
+    end
+
+    local row_pos = 0
+    local field_pos, type_
+
+    for i, row in pairs(rows) do
+        row_pos = row_pos + 1
+
+        if not is_number(i) then
+            logger:error('invalid row at', row_pos, ': lua-table key type should be number, not', type(i))
+            logger:info('expected structure: Table<number, Table<number, string | number | boolean> >')
+            return false
+        end
+        if not is_table(row) then
+            logger:error('invalid row at', row_pos, ': invalid lua-table value type', type(row))
+            logger:info('expected structure: Table<number, Table<number, string | number | boolean> >')
+            return false
+        end
+
+        field_pos = 0 
+        for j, field_value in pairs(row) do
+            field_pos = field_pos + 1
+            type_ = type(field_value)
+
+            if not is_number(j) then
+                logger:error('invalid row at', row_pos, '- invalid field at', field_pos, ': lua-table key type should be number, not', type(j))
+                logger:info('expected structure: Table<number, Table<number, string | number | boolean> >')
+                return false
+            end
+
+            if not (
+                type_ == 'string'
+                or type_ == 'number'
+                or type_ == 'boolean' 
+            ) then
+                logger:error('invalid row at', row_pos, '- invalid field at', field_pos, ': invalid lua-table value type', type_)
+                logger:info('expected structure: Table<number, Table<number, string | number | boolean> >')
+                return false
+            end
+        end
+
+        if #row ~= #table_meta.columns then
+            logger:error('invalid row at', row_pos, '- number of row fields not equal number of columns:', #row, '!=', #table_meta.columns)
+            return false
+        end
+    end
+
+    ------@alias ExtraMapping {[Column]: table <Field, Key[]>}
+
+    if results.indexes ~= nil then
+        
+        local index_pos = 0
+        local table_keys_pos = 0
+        
+        for column, index in pairs(results.indexes) do
+            index_pos = index_pos + 1
+
+            type_ = type(column)
+            if not (type_ == 'string' or type_ == 'number' or type_ == 'boolean') then
+                logger:error('invalid index at', index_pos, ': lua-table key type should be <string | number | boolean>, not', type_)
+                return false
+            end
+
+            if not table_meta.columns_lookup[column] then
+                logger:error('invalid index for', column, ': index key not a table column:', table.concat(table_meta.columns, ', '))
+                for col, value in pairs(table_meta.columns_lookup) do
+                    logger:debug('TEST lkp: col =', col, '; value =', value)
+                end
+                return false
+            end
+
+            if not is_table(index) then
+                logger:error('invalid index for column', column, ': index type should be Table <string | number | boolean, Key[]>, not', type(index))
+                return false
+            end
+
+            for index_key, table_keys in pairs(index) do
+                type_ = type(index_key)
+                if not (type_ == 'string' or type_ == 'number') then
+                    logger:error('invalid index for', column, '- invalid index key: lua-table key type should be <string | number>, not', type_)
+                    return false
+                end
+
+                if not is_table(table_keys) then
+                    logger:error('invalid index for column', column, 'with value', index_key, '- invalid table keys mapping type: should be Indexed Table (Key[]), not', type_)
+                    return false
+                end
+
+                table_keys_pos = 0
+                for i, table_key in pairs(table_keys) do
+                    table_keys_pos = table_keys_pos + 1
+                    
+                    if not is_number(i) then
+                        logger:error('invalid index for column', column, 'with value', index_key, '- table keys mapping at ', table_keys_pos, ': lua-table key type should be number, not', type(i))
+                        logger:info('expected structure: Indexed Table (Key[])')
+                        return false
+                    end
+
+                    type_ = type(table_key)
+                    if not (type_ == 'string' or type_ == 'number' or type_ == 'boolean') then
+                        logger:error('invalid index for column', column, 'with value', index_key, ': lua-table value type should be <string | number | boolean>, not', type_)
+                        return false
+                    end
+                end
+            end
+
+        end
+    end
+
+    return true, row_pos
+end
+
+
+---@param table_meta? DBTableMeta
+---@param logger LoggerCls
+---@return boolean
+local function is_valid_table_meta(table_meta, logger)
+    if table_meta == nil then
+        logger:error('ERROR: table meta not found -> skip')
+        return false
+    end
+
+    if table_meta.name == nil then
+        logger:error('ERROR: invalid table meta: no name -> skip')
+        return false
+    end
+
+    if table_meta.ptr == nil then
+        logger:error('ERROR: invalid table meta: no pointer -> skip')
+        return false
+    end
+
+    if table_meta.columns == nil then
+        logger:error('ERROR: invalid table meta: no columns -> skip')
+        return false
+    end
+
+    if table_meta.key_column == nil then
+        logger:error('ERROR: invalid table meta: no key_column -> skip')
+        return false
+    end
+
+    return true
+end
+
+
+---@param info? ExtractorInfo
+---@param logger LoggerCls
+---@return boolean
+local function is_valid_extractor_info(info, logger)
+    if info == nil then
+        logger:error('ERROR: no extractor info returned -> skip')
+        return false
+    end
+
+    if not is_table(info) then
+        logger:error('ERROR: invalid extractor info returned: it is not a table -> skip')
+        return false
+    end
+
+    if not is_string(info.table_name)  then
+        logger:error('ERROR: invalid extractor info returned: no valid name -> skip')
+        return false
+    end
+
+    if not is_table(info.columns) then
+        logger:error('ERROR: invalid extractor info returned: columns is not a table -> skip')
+        return false
+    end
+
+    if not is_number(info.key_column_id) then
+        logger:error('ERROR: invalid extractor info returned: no valid key_column_id -> skip')
+        return false
+    end
+
+    if not is_function(info.extractor) == nil then
+        logger:error('ERROR: invalid extractor info returned: no valid extractor function -> skip')
+        return false
+    end
+
+    return true
+end
+
+
+return {
+    validate_table_columns = validate_columns,
+    check_builder_results = check_builder_results,
+    is_valid_table_meta = is_valid_table_meta,
+    is_valid_extractor_info = is_valid_extractor_info,
+}
