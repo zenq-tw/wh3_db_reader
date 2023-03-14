@@ -14,7 +14,7 @@ return {
     extractor=function(ptr, logger)
         logger:debug('table meta address is:', mr.tostring(ptr))
     
-        local guard_value = 5000
+        local guard_value = 10000
         local rows_count = mr.read_int32(ptr, T.uint32(0x08))
     
         if rows_count > guard_value then
@@ -26,12 +26,17 @@ return {
         local node_ptr = mr.read_pointer(ptr, T.uint32(0x30))  -- address of records linked list tail 
         logger:debug('list tail (addr):', mr.tostring(node_ptr), 'array (addr):', mr.tostring(array_ptr))
     
-        local unit_key, group_key, priority
         local rows = {}
-        local indexes = {['building_level']={}}
+        local indexes = {
+            ['building_level']={},
+            ['unit_group']={},
+        }
     
         logger:add_indent()
-        local record_pos, id, record_ptr, unit_ptr, group_ptr
+        local record_pos, record_ptr
+        local id
+        local building_lvl_ptr, building_lvl
+        local group_ptr, group_key
 
         while not mr.eq(node_ptr, utils.null_ptr) do
             logger:debug('node ptr:', mr.tostring(node_ptr))
@@ -45,20 +50,20 @@ return {
             logger:debug('record_ptr:', mr.tostring(record_ptr))
 
             building_lvl_ptr = mr.read_pointer(record_ptr, T.uint32(0x08))
-            logger:debug('building_lvl_ptr:', mr.tostring(unit_ptr))
-            building_lvl = utils.read_string_CA(building_lvl_ptr, 0x08)
-            logger:debug('building_lvl:', unit_key)
+            logger:debug('building_lvl_ptr:', mr.tostring(building_lvl_ptr))
+            building_lvl = utils.read_string_CA(building_lvl_ptr, 0x08, true)
+            logger:debug('building_lvl:', building_lvl)
 
             group_ptr = mr.read_pointer(record_ptr, T.uint32(0x10))  -- armed_citizen_group instance address
             logger:debug('group_ptr:', mr.tostring(group_ptr))
             group_key = utils.read_string_CA(group_ptr, 0x08)
             logger:debug('group_key:', group_key)
 
-            utils.include_key_in_index(indexes['unit'], unit_key, id)
+            utils.include_key_in_index(indexes['building_level'], building_lvl, id)
             utils.include_key_in_index(indexes['unit_group'], group_key, id)
 
-            table.insert(rows, {id, priority, unit_key, group_key})
-            logger:debug('id:', id, 'priority:', priority, 'unit:', unit_key, 'unit_group:', group_key)
+            table.insert(rows, {id, building_lvl, group_key})
+            logger:debug('id:', id, 'building_lvl:', building_lvl, 'unit_group:', group_key)
 
             node_ptr = mr.read_pointer(node_ptr)  -- getting node->prev pointer
         end
