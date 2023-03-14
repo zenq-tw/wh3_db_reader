@@ -38,7 +38,7 @@ DBReaderSessionCache.__index = DBReaderSessionCache
 function DBReaderSessionCache.new(db_address, logger)
     local self = setmetatable({}, DBReaderSessionCache)
 
-    self._cache_file_path = 'data/_db_reader__cache.lua'
+    self._cache_file_path = 'data/.db_reader__cache.lua'
     self._log = logger
     self._cache_header = mr.tostring(db_address)
     self._data = {}
