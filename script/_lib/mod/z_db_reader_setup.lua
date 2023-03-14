@@ -133,6 +133,10 @@ local function _setup()
             l.info('db_reader: trigger event ' .. initialized_event .. '...')
             core:trigger_custom_event(initialized_event, {get_db_reader=db_reader})
             l.info('db_reader: event ' .. initialized_event .. ' triggered')
+
+            registry_data = registry:get_data_for_cache()
+            db_reader_data = db_reader:get_data_for_cache()
+            cache:set(registry_data, db_reader_data)
         end,
         false
     )
