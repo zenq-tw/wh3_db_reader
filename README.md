@@ -297,6 +297,7 @@ Read `CONTRIBUTING.md` at the root of the repository.
 2. add support of MCT
     1. DB tables export in common formats (tsv, csv)?
     2. View tables content in game?
+3. support battle mod
 
 
 ## Credits
