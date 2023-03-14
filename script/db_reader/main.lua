@@ -146,7 +146,7 @@ function DBReader:request_table(table_name)
 end
 
 ---check if table data loaded from memory
----@param table_name any
+---@param table_name string
 ---@return boolean
 function DBReader:is_table_loaded(table_name)
     self._log:enter_context('db: check table', table_name)
@@ -159,7 +159,7 @@ end
 
 
 ---get extracted db table 
----@param table_name any
+---@param table_name string
 ---@return DBTable?
 function DBReader:get_table(table_name)
     self._log:enter_context('db: get table', table_name)
