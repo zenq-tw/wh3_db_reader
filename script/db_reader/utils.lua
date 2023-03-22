@@ -254,38 +254,39 @@ end
 ---@param hex_repr string
 ---@return pointer
 ---```
----hex_address = '461F7D30'  -- or (0x461F7D30)
+---hex_address = '461F7D30'  -- or ('0x461F7D30')
 ---ptr = mr.pointer(convert_hex_to_pointer(hex_address))
 ---address = mr.tostring(ptr)  -- get address where pointer reference to
 ---out(address)  -- 00000000461F7D30
 ---```
 local function convert_hex_to_pointer(hex_repr)
-    -- 0x461F7D30 -> 461F7D30
+    -- "0x461F7D30"  ->  "461F7D30"
     if hex_repr:starts_with('0x') then
         hex_repr = hex_repr:sub(3, -1)
     end
 
-    -- 461F7D30 -> { 30 7D 1F 46 }
+    -- "461F7D30"  ->  { "30", "7D", "1F", "46" }
     local chunks = {}
-    for i=#hex_repr-1, 0, -2 do
-        chunks[#chunks+1] = hex_repr:sub(i, i+1)
+    local chunks_count = 0
+    for i = #hex_repr - 1 , 0, -2 do
+        chunks_count = chunks_count + 1
+        chunks[chunks_count] = hex_repr:sub(i, i+1)
     end
 
-    -- { 30 7D 1F 46 } -> { 48 125 31 70 }
+    -- { "30", "7D", "1F", "46" }  ->  { 48, 125, 31, 70 }
     local hex_chunks = {}
-    for i=1, #chunks do
-        hex_chunks[#hex_chunks+1] = tonumber(chunks[i], 16)
+    for i=1, chunks_count do
+        hex_chunks[i] = tonumber(chunks[i], 16)
     end
 
-    -- { 48 125 31 70 } -> { 48 125 31 70 0 0 0 0 }
-    local padding_size = 8 - #hex_chunks
-    for _=1, padding_size do
-        hex_chunks[#hex_chunks+1] = 0
+    -- { 48, 125, 31, 70 }  ->  { 48, 125, 31, 70, 0, 0, 0, 0 }
+    for i = chunks_count + 1, 8 do
+        hex_chunks[i] = 0
     end
 
-    -- { 48 125 31 70 0 0 0 0 } -> '\48\125\31\70\0\0\0\0'  ==  address 0x00000000461F7D30
+    -- { 48, 125, 31, 70, 0, 0, 0, 0 }  ->  "\48\125\31\70\0\0\0\0"  ==  address 0x00000000461F7D30
     local res = ''
-    for i=1, #hex_chunks do
+    for i=1, 8 do
         res = res .. string.char(hex_chunks[i])
     end
 
