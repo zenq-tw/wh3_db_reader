@@ -4,6 +4,15 @@ local T = assert(core:load_global_script('script.db_reader.types'))  ---@module 
 local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@module "script.db_reader.utils"
 
 
+---@alias TIndex__armed_citizenry_units_to_unit_groups_junctions {[string]: nil | string[]}
+---@alias Record__armed_citizenry_units_to_unit_groups_junctions {id: string, priority: integer, unit: string, unit_group: string}
+---@alias Indexes__armed_citizenry_units_to_unit_groups_junctions {unit: TIndex__armed_citizenry_units_to_unit_groups_junctions, unit_group: TIndex__armed_citizenry_units_to_unit_groups_junctions}
+
+---@class DBTable__armed_citizenry_units_to_unit_groups_junctions: DBTable
+---@field records table <string, Record__armed_citizenry_units_to_unit_groups_junctions>
+---@field indexes Indexes__armed_citizenry_units_to_unit_groups_junctions
+
+
 ---@type ExtractorInfo
 return {
     table_name='armed_citizenry_units_to_unit_groups_junctions',
@@ -28,7 +37,10 @@ return {
     
         local unit_key, group_key, priority
         local rows = {}
-        local indexes = {['unit']={}, ['unit_group']={}}
+        
+        local indexes = {['unit']={}, ['unit_group']={}}  ---@type Indexes__armed_citizenry_units_to_unit_groups_junctions
+        local unit_index = indexes['unit']          --[[@as {[string]: string[]} ]]
+        local group_index = indexes['unit_group']   --[[@as {[string]: string[]} ]]
     
         logger:add_indent()
         local record_pos, id, record_ptr, unit_ptr, group_ptr
@@ -57,8 +69,8 @@ return {
             group_key = utils.read_string_CA(group_ptr, 0x08)
             logger:debug('group_key:', group_key)
 
-            utils.include_key_in_index(indexes['unit'], unit_key, id)
-            utils.include_key_in_index(indexes['unit_group'], group_key, id)
+            utils.include_key_in_index(unit_index, unit_key, id)
+            utils.include_key_in_index(group_index, group_key, id)
             
             table.insert(rows, {id, priority, unit_key, group_key})
             logger:debug('id:', id, 'priority:', priority, 'unit:', unit_key, 'unit_group:', group_key)

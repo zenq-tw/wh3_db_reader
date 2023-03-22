@@ -4,6 +4,15 @@ local T = assert(core:load_global_script('script.db_reader.types'))  ---@module 
 local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@module "script.db_reader.utils"
 
 
+---@alias TIndex__building_level_armed_citizenry_junctions {[string]: string[]?}
+---@alias Record__building_level_armed_citizenry_junctions {id: string, building_level: string, unit_group: string}
+---@alias Indexes__building_level_armed_citizenry_junctions {building_level: TIndex__building_level_armed_citizenry_junctions, unit_group: TIndex__building_level_armed_citizenry_junctions}
+
+---@class DBTable__building_level_armed_citizenry_junctions: DBTable
+---@field records table <string, Record__building_level_armed_citizenry_junctions>
+---@field indexes Indexes__building_level_armed_citizenry_junctions
+
+
 ---@type ExtractorInfo
 return {
     table_name='building_level_armed_citizenry_junctions',
@@ -27,10 +36,12 @@ return {
         logger:debug('list tail (addr):', mr.tostring(node_ptr), 'array (addr):', mr.tostring(array_ptr))
     
         local rows = {}
-        local indexes = {
+        local indexes = {  ---@type Indexes__building_level_armed_citizenry_junctions
             ['building_level']={},
             ['unit_group']={},
         }
+        local building_level_index = indexes['building_level']  --[[@as {[string]: string[]} ]]
+        local unit_group_index = indexes['unit_group']          --[[@as {[string]: string[]} ]]
     
         logger:add_indent()
         local record_pos, record_ptr
@@ -59,8 +70,8 @@ return {
             group_key = utils.read_string_CA(group_ptr, 0x08)
             logger:debug('group_key:', group_key)
 
-            utils.include_key_in_index(indexes['building_level'], building_lvl, id)
-            utils.include_key_in_index(indexes['unit_group'], group_key, id)
+            utils.include_key_in_index(building_level_index, building_lvl, id)
+            utils.include_key_in_index(unit_group_index, group_key, id)
 
             table.insert(rows, {id, building_lvl, group_key})
             logger:debug('id:', id, 'building_lvl:', building_lvl, 'unit_group:', group_key)
