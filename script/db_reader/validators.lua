@@ -9,20 +9,20 @@ local function validate_columns(columns, key_column_id, logger)
     end
 
     if not is_table(columns) then
-        logger:error('invalid argument - columns: should be string array (Table<number, string>), but not', type(columns))
+        logger:error('invalid argument - columns: must be string array (Table<number, string>), but not', type(columns))
         return false
     end
 
     for i, column in pairs(columns) do
         if not is_number(i) then
-            logger:error('invalid columns table structure - lua-table key type should be number, but not', type(i))
-            logger:info('should be string array (Table<number, string>)')
+            logger:error('invalid columns table structure - lua-table key type must be number, but not', type(i))
+            logger:info('must be string array (Table<number, string>)')
             return false
         end
 
         if not is_string(column) then
-            logger:error('invalid columns table structure - lua-table value type should be string, but not', type(column))
-            logger:info('should be string array (Table<number, string>)')
+            logger:error('invalid columns table structure - lua-table value type must be string, but not', type(column))
+            logger:info('must be string array (Table<number, string>)')
             return false
         end
     end
@@ -33,7 +33,7 @@ local function validate_columns(columns, key_column_id, logger)
     end
 
     if not is_number(key_column_id) or key_column_id <= 0 then
-        logger:error('invalid argument - key_column_id: should be positive number, less or equal then number of columns (' .. #columns .. '), but not', key_column_id, type(key_column_id))
+        logger:error('invalid argument - key_column_id: must be positive number, less or equal then number of columns (' .. #columns .. '), but not', key_column_id, type(key_column_id))
         return false
     end
 
@@ -81,7 +81,7 @@ local function check_builder_results(table_meta, results, logger)
         row_pos = row_pos + 1
 
         if not is_number(i) then
-            logger:error('invalid row at', row_pos, ': lua-table key type should be number, not', type(i))
+            logger:error('invalid row at', row_pos, ': lua-table key type must be number, not', type(i))
             logger:info('expected structure: Table<number, Table<number, string | number | boolean> >')
             return false
         end
@@ -97,7 +97,7 @@ local function check_builder_results(table_meta, results, logger)
             type_ = type(field_value)
 
             if not is_number(j) then
-                logger:error('invalid row at', row_pos, '- invalid field at', field_pos, ': lua-table key type should be number, not', type(j))
+                logger:error('invalid row at', row_pos, '- invalid field at', field_pos, ': lua-table key type must be number, not', type(j))
                 logger:info('expected structure: Table<number, Table<number, string | number | boolean> >')
                 return false
             end
@@ -131,7 +131,7 @@ local function check_builder_results(table_meta, results, logger)
 
             type_ = type(column)
             if not (type_ == 'string' or type_ == 'number' or type_ == 'boolean') then
-                logger:error('invalid index at', index_pos, ': lua-table key type should be <string | number | boolean>, not', type_)
+                logger:error('invalid index at', index_pos, ': lua-table key type must be <string | number | boolean>, not', type_)
                 return false
             end
 
@@ -144,19 +144,19 @@ local function check_builder_results(table_meta, results, logger)
             end
 
             if not is_table(index) then
-                logger:error('invalid index for column', column, ': index type should be Table <string | number | boolean, Key[]>, not', type(index))
+                logger:error('invalid index for column', column, ': index type must be Table <string | number | boolean, Key[]>, not', type(index))
                 return false
             end
 
             for index_key, table_keys in pairs(index) do
                 type_ = type(index_key)
                 if not (type_ == 'string' or type_ == 'number') then
-                    logger:error('invalid index for', column, '- invalid index key: lua-table key type should be <string | number>, not', type_)
+                    logger:error('invalid index for', column, '- invalid index key: lua-table key type must be <string | number>, not', type_)
                     return false
                 end
 
                 if not is_table(table_keys) then
-                    logger:error('invalid index for column', column, 'with value', index_key, '- invalid table keys mapping type: should be Indexed Table (Key[]), not', type_)
+                    logger:error('invalid index for column', column, 'with value', index_key, '- invalid table keys mapping type: must be Indexed Table (Key[]), not', type_)
                     return false
                 end
 
@@ -165,14 +165,14 @@ local function check_builder_results(table_meta, results, logger)
                     table_keys_pos = table_keys_pos + 1
                     
                     if not is_number(i) then
-                        logger:error('invalid index for column', column, 'with value', index_key, '- table keys mapping at ', table_keys_pos, ': lua-table key type should be number, not', type(i))
+                        logger:error('invalid index for column', column, 'with value', index_key, '- table keys mapping at ', table_keys_pos, ': lua-table key type must be number, not', type(i))
                         logger:info('expected structure: Indexed Table (Key[])')
                         return false
                     end
 
                     type_ = type(table_key)
                     if not (type_ == 'string' or type_ == 'number' or type_ == 'boolean') then
-                        logger:error('invalid index for column', column, 'with value', index_key, ': lua-table value type should be <string | number | boolean>, not', type_)
+                        logger:error('invalid index for column', column, 'with value', index_key, ': lua-table value type must be <string | number | boolean>, not', type_)
                         return false
                     end
                 end
