@@ -81,7 +81,7 @@ local function read_string_CA(ptr, offset, isPtr, isWide, safeCapValue)
 end
 
 
-local function lookup_to_indexed(lookup_table)
+function table.lookup_to_indexed(lookup_table)
     local indexed = {}
 
     local i = 1
@@ -300,7 +300,6 @@ return {
     read_string_CA=read_string_CA,
     get_db_address=get_db_address,
     check_is_db_constructed=check_is_db_constructed,
-    lookup_to_indexed=lookup_to_indexed,
     merge_indexed_tables=merge_indexed_tables,
     dump_table=dump_table,
     null_ptr=convert_hex_to_pointer('0x00'),
