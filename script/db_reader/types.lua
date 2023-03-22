@@ -7,9 +7,9 @@
 ---@alias Field Key|boolean
 
 
----@alias TableIndexes {[Column]: table <Field, Key[]>}
----@alias TableData {rows: Field[][], indexes: TableIndexes | nil}
----@alias TableDataExtractor fun(ptr: pointer, logger: LoggerCls): TableData | nil
+---@alias RawTableIndexes {[Column]: table <Field, Key[]>}
+---@alias RawTableData {rows: Field[][], indexes: RawTableIndexes | nil}
+---@alias TableDataExtractor fun(ptr: pointer, logger: LoggerCls): RawTableData | nil
 
 ---@class ExtractorInfo
 ---@field table_name string name of table for which extractor is registered
@@ -18,6 +18,9 @@
 ---@field extractor TableDataExtractor function that will extract table data
 
 ---@alias Record {[Column]: Field}
+
+---@alias ReferenceKeys { count: integer, keys: Key[] }
+---@alias TableIndexes { [Column]: { [Field]: ReferenceKeys } }
 
 ---@class DBTable
 ---@field count integer

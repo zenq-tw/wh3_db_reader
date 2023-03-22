@@ -5,7 +5,7 @@ local collections = assert(core:load_global_script('script.db_reader.collections
 local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@module "script.db_reader.utils"
 
 
----@alias TIndex__building_level_armed_citizenry_junctions {[string]: string[]?}
+---@alias TIndex__building_level_armed_citizenry_junctions {[string]: nil | {count: integer, keys: string[]}}
 ---@alias Record__building_level_armed_citizenry_junctions {id: string, building_level: string, unit_group: string}
 ---@alias Indexes__building_level_armed_citizenry_junctions {building_level: TIndex__building_level_armed_citizenry_junctions, unit_group: TIndex__building_level_armed_citizenry_junctions}
 

@@ -1,3 +1,4 @@
+local collections = assert(core:load_global_script('script.db_reader.collections'))  ---@module "script.db_reader.collections"
 local validators = assert(core:load_global_script('script.db_reader.validators'))  ---@module "script.db_reader.validators"
 local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@module "script.db_reader.utils"
 
@@ -266,7 +267,7 @@ end
 
 ---@protected
 ---@param table_meta DBTableMeta
----@param table_data TableData
+---@param table_data RawTableData
 ---@param rows_count integer
 ---@return DBTable? db_table
 function DBReader:_build_table(table_meta, table_data, rows_count)
@@ -274,41 +275,59 @@ function DBReader:_build_table(table_meta, table_data, rows_count)
 
     local records = utils.make_table_data(table_data.rows, table_meta.columns, table_meta.key_column, rows_count)
 
+    local prepared_indexes = nil
     if table_data.indexes ~= nil then
-        is_valid = self:_check_indexes_integrity(records, table_data.indexes)
+        is_valid, prepared_indexes = self:_check_indexes_integrity(records, table_data.indexes)
         if not is_valid then
             self._log:error('index integrity violation')
             return
         end
     end
 
-    ---@type DBTable
-    local db_table = {
+    local db_table = {  ---@type DBTable
         count=rows_count,
         records=records,
-        indexes=table_data.indexes
+        indexes=prepared_indexes,
     }
-
 
     self._log:debug('table data was built'):leave_context()
     return db_table
 end
 
 ---@param records table <Key, Record>
----@param indexes TableIndexes
----@return boolean is_valid
+---@param indexes RawTableIndexes
+---@return boolean is_valid, TableIndexes? prepared_indexes
 function DBReader:_check_indexes_integrity(records, indexes)
+    local prepared_indexes = collections.defaultdict(collections.factories.table)  ---@type defaultdict<Column, {[Field]: ReferenceKeys}>
+    local keys
+    local counter
+
     for column, index in pairs(indexes) do
         for value, table_keys in pairs(index) do
-            for _, key in pairs(table_keys) do
+            keys, counter = {}, 0
+
+            for i, key in pairs(table_keys) do
+                if not is_number(i) then
+                    self._log:error('invalid index for column', column, 'with value', value, '- table keys must be an array')    
+                end
+
                 if records[key] == nil then
                     self._log:error('invalid index for column', column, 'with value', value, '- record with such key not found:', key)
                     return false 
                 end
+
+                counter = i
+                keys[i] = key
             end
+            
+            prepared_indexes[column][value] = {
+                count=counter,
+                keys=keys,
+            }
         end
     end
-    return true
+
+    return true, prepared_indexes
 end
 
 
@@ -325,7 +344,7 @@ end
 
 ---@protected
 ---@param table_meta DBTableMeta
----@return TableData? table_data, integer? rows_count 
+---@return RawTableData? table_data, integer? rows_count 
 function DBReader:_extract_table_data(table_meta)
     self._log:enter_context('extract')
 

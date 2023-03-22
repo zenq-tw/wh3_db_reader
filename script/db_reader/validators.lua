@@ -48,7 +48,7 @@ end
 
 ---validate returned rows 
 ---@param table_meta DBTableMeta
----@param results TableData | nil
+---@param results RawTableData | nil
 ---@param logger LoggerCls
 ---@return boolean is_valid, integer? rows_count
 local function check_builder_results(table_meta, results, logger)
