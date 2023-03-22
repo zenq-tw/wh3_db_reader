@@ -8,6 +8,11 @@ local T = assert(core:load_global_script('script.db_reader.types'))  ---@module 
 
 
 
+if not table.unpack then
+    table.unpack = unpack
+end
+
+
 function table.lookup_to_indexed(lookup_table)
     local indexed = {}
 
