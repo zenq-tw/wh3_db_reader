@@ -1,6 +1,7 @@
 local mr = assert(_G.memreader)
 
 local T = assert(core:load_global_script('script.db_reader.types'))  ---@module "script.db_reader.types"
+local collections = assert(core:load_global_script('script.db_reader.collections'))  ---@module "script.db_reader.collections"
 local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@module "script.db_reader.utils"
 
 
@@ -37,10 +38,13 @@ return {
     
         local unit_key, group_key, priority
         local rows = {}
-        
-        local indexes = {['unit']={}, ['unit_group']={}}  ---@type Indexes__armed_citizenry_units_to_unit_groups_junctions
-        local unit_index = indexes['unit']          --[[@as {[string]: string[]} ]]
-        local group_index = indexes['unit_group']   --[[@as {[string]: string[]} ]]
+
+        local indexes = {}  ---@type Indexes__armed_citizenry_units_to_unit_groups_junctions
+        local unit_index = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Key[]>
+        local group_index = collections.defaultdict(collections.factories.table)  ---@type defaultdict<string, Key[]>
+
+        indexes.unit = unit_index
+        indexes.unit_group = group_index
     
         logger:add_indent()
         local record_pos, id, record_ptr, unit_ptr, group_ptr
@@ -69,8 +73,8 @@ return {
             group_key = utils.read_string_CA(group_ptr, 0x08)
             logger:debug('group_key:', group_key)
 
-            utils.include_key_in_index(unit_index, unit_key, id)
-            utils.include_key_in_index(group_index, group_key, id)
+            table.insert(unit_index[unit_key], id)
+            table.insert(group_index[group_key], id)
             
             table.insert(rows, {id, priority, unit_key, group_key})
             logger:debug('id:', id, 'priority:', priority, 'unit:', unit_key, 'unit_group:', group_key)

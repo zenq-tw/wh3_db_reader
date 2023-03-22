@@ -1,6 +1,7 @@
 local mr = assert(_G.memreader)
 
 local T = assert(core:load_global_script('script.db_reader.types'))  ---@module "script.db_reader.types"
+local collections = assert(core:load_global_script('script.db_reader.collections'))  ---@module "script.db_reader.collections"
 local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@module "script.db_reader.utils"
 
 
@@ -36,14 +37,16 @@ return {
         logger:debug('list tail (addr):', mr.tostring(node_ptr), 'array (addr):', mr.tostring(array_ptr))
     
         local rows = {}
-        local indexes = {  ---@type Indexes__building_level_armed_citizenry_junctions
-            ['building_level']={},
-            ['unit_group']={},
-        }
-        local building_level_index = indexes['building_level']  --[[@as {[string]: string[]} ]]
-        local unit_group_index = indexes['unit_group']          --[[@as {[string]: string[]} ]]
+
+        local indexes = {}  ---@type Indexes__building_level_armed_citizenry_junctions
+        local building_level_index = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Key[]>
+        local unit_group_index = collections.defaultdict(collections.factories.table)  ---@type defaultdict<string, Key[]>
     
+        indexes.building_level = building_level_index
+        indexes.unit_group = unit_group_index
+
         logger:add_indent()
+
         local record_pos, record_ptr
         local id
         local building_lvl_ptr, building_lvl
@@ -70,8 +73,8 @@ return {
             group_key = utils.read_string_CA(group_ptr, 0x08)
             logger:debug('group_key:', group_key)
 
-            utils.include_key_in_index(building_level_index, building_lvl, id)
-            utils.include_key_in_index(unit_group_index, group_key, id)
+            table.insert(building_level_index[building_lvl], id)
+            table.insert(unit_group_index[group_key], id)
 
             table.insert(rows, {id, building_lvl, group_key})
             logger:debug('id:', id, 'building_lvl:', building_lvl, 'unit_group:', group_key)
