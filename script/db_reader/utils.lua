@@ -1,6 +1,44 @@
 local mr = assert(_G.memreader)
 local T = assert(core:load_global_script('script.db_reader.types'))  ---@module "script.db_reader.types"
 
+
+--==================================================================================================================================--
+--                                                          table extensions
+--==================================================================================================================================--
+
+
+
+function table.lookup_to_indexed(lookup_table)
+    local indexed = {}
+
+    local i = 1
+    for key, _ in pairs(lookup_table) do
+        indexed[i] = key
+        i = i + 1
+    end
+
+    return indexed
+end
+
+
+--TODO: rewrite with memreader!
+--Author: Vandy (Groove Wizard)
+function table.deepcopy(tbl)
+	local ret = {}
+	for k, v in pairs(tbl) do
+		ret[k] = type(v) == 'table' and table.deepcopy(v) or v
+	end
+	return ret
+end
+
+
+
+--==================================================================================================================================--
+--                                                          other stuff
+--==================================================================================================================================--
+
+
+
 local base_shift = "044DF700"  -- 0x044DF700
 
 
@@ -78,19 +116,6 @@ local function read_string_CA(ptr, offset, isPtr, isWide, safeCapValue)
 	end
 
 	return ''  -- trash
-end
-
-
-function table.lookup_to_indexed(lookup_table)
-    local indexed = {}
-
-    local i = 1
-    for key, _ in pairs(lookup_table) do
-        indexed[i] = key
-        i = i + 1
-    end
-
-    return indexed
 end
 
 
@@ -226,18 +251,6 @@ local function dump_table(t)
 end
 
 
---TODO: rewrite with memreader!
---Author: Vandy (Groove Wizard)
-function table.deepcopy(tbl)
-	local ret = {}
-	for k, v in pairs(tbl) do
-		ret[k] = type(v) == 'table' and table.deepcopy(v) or v
-	end
-	return ret
-end
-
-
-
 ---@param index {[string]: Key[]}
 ---@param value string
 ---@param table_key Key
@@ -324,7 +337,11 @@ local function make_table_data(rows, columns, key_column, rows_count, columns_co
 end
 
 
--------------------------------------------------------------------
+
+--==================================================================================================================================--
+--                                                   Public namespace initialization
+--==================================================================================================================================--
+
 
 
 return {
