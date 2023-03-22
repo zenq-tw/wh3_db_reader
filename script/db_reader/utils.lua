@@ -102,12 +102,13 @@ local function merge_indexed_tables(indexed1, indexed2)
     end
 
     local merged = {}
+    local indexed1_size = #indexed1
 
-    for i=1, #indexed1 do
+    for i=1, indexed1_size do
         merged[i] = indexed1[i]
     end
 
-    local i = #merged + 1
+    local i = indexed1_size + 1
     for j=1, #indexed2 do
         if lkp1[indexed2[j]] == nil then
             merged[i] = indexed2[j]
