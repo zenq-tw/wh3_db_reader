@@ -294,6 +294,36 @@ local function convert_hex_to_pointer(hex_repr)
 end
 
 
+---map columns to rows from raw sources
+---@param rows any
+---@param columns any
+---@param key_column string
+---@param rows_count? integer
+---@param columns_count? integer
+---@return table<Key, Record>
+local function make_table_data(rows, columns, key_column, rows_count, columns_count)
+    rows_count = rows_count or #rows_count
+    columns_count = columns_count or #columns_count
+
+    ---@type table<string, Record>
+    local records = {}
+
+    local row, record
+    for i=1, rows_count do
+        row = rows[i]
+        record = {}
+
+        for j=1, columns_count do
+            record[columns[j]] = row[j]
+        end
+
+        records[record[key_column]] = record
+    end
+
+    return records
+end
+
+
 -------------------------------------------------------------------
 
 
@@ -306,4 +336,5 @@ return {
     null_ptr=convert_hex_to_pointer('0x00'),
     include_key_in_index=include_key_in_index,
     convert_hex_to_pointer=convert_hex_to_pointer,
+    make_table_data=make_table_data,
 }

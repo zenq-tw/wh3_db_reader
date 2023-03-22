@@ -270,29 +270,9 @@ end
 ---@param rows_count integer
 ---@return DBTable? db_table
 function DBReader:_build_table(table_meta, table_data, rows_count)
-    self._log:enter_context('build')
+    self._log:enter_context('build'):debug('building table data, count of records:', rows_count)
 
-    local columns = table_meta.columns
-    local columns_count = #columns
-    local key_column = table_meta.key_column
-    local rows = table_data.rows 
-
-    ---@type table<string, Record>
-    local records = {}
-
-    self._log:debug('building table data, count of records:', rows_count)
-
-    local row, record
-    for i=1, rows_count do
-        row = rows[i]
-        record = {}
-
-        for j=1, columns_count do
-            record[columns[j]] = row[j]
-        end
-
-        records[record[key_column]] = record
-    end
+    local records = utils.make_table_data(table_data.rows, table_meta.columns, table_meta.key_column, rows_count)
 
     if table_data.indexes ~= nil then
         is_valid = self:_check_indexes_integrity(records, table_data.indexes)
