@@ -19,8 +19,8 @@
 
 ---@alias Record {[Column]: Field}
 
----@alias ReferenceKeys { count: integer, keys: Key[] }
----@alias TableIndexes { [Column]: { [Field]: ReferenceKeys } }
+---@alias TableKeys { count: integer, keys: Key[] }
+---@alias TableIndexes { [Column]: { [Field]: TableKeys } }
 
 ---@class DBTable
 ---@field count integer
