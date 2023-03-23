@@ -298,7 +298,7 @@ end
 ---@param indexes RawTableIndexes
 ---@return boolean is_valid, TableIndexes? prepared_indexes
 function DBReader:_check_indexes_integrity(records, indexes)
-    local prepared_indexes = collections.defaultdict(collections.factories.table)  ---@type defaultdict<Column, {[Field]: ReferenceKeys}>
+    local prepared_indexes = collections.defaultdict(collections.factories.table)  ---@type defaultdict<Column, {[Field]: TableKeys}>
     local keys
     local counter
 
