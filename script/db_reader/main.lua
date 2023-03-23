@@ -322,7 +322,7 @@ function DBReader:_check_indexes_integrity(records, indexes)
             
             prepared_indexes[column][value] = {
                 count=counter,
-                keys=keys,
+                array=keys,
             }
         end
     end

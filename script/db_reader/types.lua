@@ -19,7 +19,7 @@
 
 ---@alias Record {[Column]: Field}
 
----@alias TableKeys { count: integer, keys: Key[] }
+---@alias TableKeys { count: integer, array: Key[] }
 ---@alias TableIndexes { [Column]: { [Field]: TableKeys } }
 
 ---@class DBTable
