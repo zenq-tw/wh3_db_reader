@@ -49,7 +49,7 @@ return {
         logger:add_indent()
         local record_pos, id, record_ptr, unit_ptr, group_ptr
 
-        while not mr.eq(node_ptr, utils.null_ptr) do
+        while not mr.eq(node_ptr, utils.null_address) do
             logger:debug('node ptr:', mr.tostring(node_ptr))
 
             id = utils.read_string_CA(node_ptr, 0x10)

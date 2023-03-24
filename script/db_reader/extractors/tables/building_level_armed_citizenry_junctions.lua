@@ -52,7 +52,7 @@ return {
         local building_lvl_ptr, building_lvl
         local group_ptr, group_key
 
-        while not mr.eq(node_ptr, utils.null_ptr) do
+        while not mr.eq(node_ptr, utils.null_address) do
             logger:debug('node ptr:', mr.tostring(node_ptr))
 
             id = utils.read_string_CA(node_ptr, 0x10)

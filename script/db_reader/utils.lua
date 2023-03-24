@@ -43,13 +43,14 @@ end
 --==================================================================================================================================--
 
 
+local utils = {}
 
 local base_shift = "044DF700"  -- 0x044DF700
 
 
 ---@param logger LoggerCls
 ---@return pointer
-local function get_db_address(logger)
+function utils.get_db_address(logger)
     local ptr = mr.base
     logger:debug('base game space address is', mr.tostring(ptr))
 
@@ -62,18 +63,6 @@ local function get_db_address(logger)
 end
 
 
----@return boolean is_constructed
-local function check_is_db_constructed()
-    return pcall(
-        function ()
-            ptr = mr.read_pointer(mr.base, T.uint32(tonumber(base_shift, 16)))
-            ptr = mr.read_pointer(ptr, T.uint32(0x10))
-            mr.read_pointer(ptr)
-        end
-    )
-end
-
-
 ---deal with case when string length is smaller than 16 -> there is no STR structure (as in other cases)
 ---@param ptr pointer
 ---@param offset? integer [default "0"] address offset that will be applied before reading
@@ -81,7 +70,7 @@ end
 ---@param isWide? boolean [default "false"] should we trait string as wchar_t (idk, at least in most cases it should be "false")
 ---@param safeCapValue? integer [default "2048"] if string cap bigger then this value it will treated like special "small" string
 ---@return string #null ended string
-local function read_string_CA(ptr, offset, isPtr, isWide, safeCapValue)
+function utils.read_string_CA(ptr, offset, isPtr, isWide, safeCapValue)
     offset = offset or 0
     isPtr = isPtr or false
     isWide = isWide or false
@@ -124,7 +113,7 @@ local function read_string_CA(ptr, offset, isPtr, isWide, safeCapValue)
 end
 
 
-local function merge_indexed_tables(indexed1, indexed2)
+function utils.merge_indexed_tables(indexed1, indexed2)
     local lkp1 = table.indexed_to_lookup(indexed1)
 
     if not lkp1 then
@@ -204,7 +193,7 @@ end
 --- Author: Vandy (Groove Wizard)
 --- @param t table
 --- @return string|boolean
-local function dump_table(t)
+function utils.dump_table(t)
     if not (type(t) == "table") then
         return false
     end
@@ -260,7 +249,7 @@ end
 ---@param value string
 ---@param table_key Key
 ---@return nil
-local function include_key_in_index(index, value, table_key)
+function utils.include_key_in_index(index, value, table_key)
     if index[value] == nil then
         index[value] = {}
     end
@@ -270,14 +259,14 @@ end
 
 ---convert hex string address to correct string that can be used in memreader as address
 ---@param hex_repr string
----@return pointer
+---@return string
 ---```
 ---hex_address = '461F7D30'  -- or ('0x461F7D30')
----ptr = mr.pointer(convert_hex_to_pointer(hex_address))
+---ptr = mr.pointer(convert_hex_to_address(hex_address))
 ---address = mr.tostring(ptr)  -- get address where pointer reference to
 ---out(address)  -- 00000000461F7D30
 ---```
-local function convert_hex_to_pointer(hex_repr)
+function utils.convert_hex_to_address(hex_repr)
     -- "0x461F7D30"  ->  "461F7D30"
     if hex_repr:starts_with('0x') then
         hex_repr = hex_repr:sub(3, -1)
@@ -312,6 +301,20 @@ local function convert_hex_to_pointer(hex_repr)
 end
 
 
+utils.null_address = utils.convert_hex_to_address('0x00')
+
+
+---@param db_address pointer
+---@return boolean is_constructed
+function utils.check_is_db_constructed(db_address)
+    return pcall(
+        function ()
+            assert(not mr.eq(mr.read_pointer(db_address), utils.null_address))
+        end
+    )
+end
+
+
 ---map columns to rows from raw sources
 ---@param rows any
 ---@param columns any
@@ -319,7 +322,7 @@ end
 ---@param rows_count? integer
 ---@param columns_count? integer
 ---@return table<Key, Record>
-local function make_table_data(rows, columns, key_column, rows_count, columns_count)
+function utils.make_table_data(rows, columns, key_column, rows_count, columns_count)
     rows_count = rows_count or #rows_count
     columns_count = columns_count or #columns_count
 
@@ -348,15 +351,4 @@ end
 --==================================================================================================================================--
 
 
-
-return {
-    read_string_CA=read_string_CA,
-    get_db_address=get_db_address,
-    check_is_db_constructed=check_is_db_constructed,
-    merge_indexed_tables=merge_indexed_tables,
-    dump_table=dump_table,
-    null_ptr=convert_hex_to_pointer('0x00'),
-    include_key_in_index=include_key_in_index,
-    convert_hex_to_pointer=convert_hex_to_pointer,
-    make_table_data=make_table_data,
-}
+return utils
