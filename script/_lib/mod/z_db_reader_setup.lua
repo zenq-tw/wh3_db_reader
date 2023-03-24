@@ -1,8 +1,15 @@
 ---@diagnostic disable: invisible
 
 
+--[[
+======================================================================================
+                                    guard clauses
+======================================================================================
+--]]
+
+
 if core:is_battle() then   --TODO: add battle mode support?
-    ModLog('db_reader: unsupported game mode (battle)')
+    ModLog('db_reader: unsupported game mode - battle')
     return
 end
 
@@ -11,14 +18,14 @@ if (
     core:is_campaign() and 
     cm.game_interface:model():is_multiplayer()  --TODO: add multiplayer support?
 ) then
-    ModLog('db_reader: unsupported game mode (multiplayer campaign)')
+    ModLog('db_reader: unsupported game mode - multiplayer campaign')
     return
 end
 
 
 --[[
 ======================================================================================
-                                    dependecies
+                                    dependencies
 ======================================================================================
 --]]
 
@@ -109,69 +116,81 @@ local extractors  ---@type ExtractorsRegistry
 local db_reader  ---@type DBReader
 
 
-
-local function _setup()
+local function _init_runtime_dependencies()
     registry:init(registry_data)
 
     extractors = ExtractorsRegistry.new(registry, l.logger)
     extractors:init()
+end
+
+
+local function _setup_db_reader()
+    db_reader = DBReader.new(db_address, registry, extractors, l.logger)
+    l.info('db_reader: created')
+
+    l.info('db_reader: trigger event ' .. created_event .. '...')
+    core:trigger_custom_event(created_event, {get_db_reader=db_reader})
+    l.info('db_reader: event ' .. created_event .. ' triggered')
+
+    db_reader:init(db_reader_data)
+
+    l.info('db_reader: trigger event ' .. initialized_event .. '...')
+    core:trigger_custom_event(initialized_event, {get_db_reader=db_reader})
+    l.info('db_reader: event ' .. initialized_event .. ' triggered')
+
+    l.info('db_reader: caching internal data...')
+    registry_data = registry:get_data_for_cache()
+    db_reader_data = db_reader:get_data_for_cache()
+
+    local is_cached = cache:set(registry_data, db_reader_data)
+    if is_cached then
+        l.info('db_reader: internal data cached')    
+    else
+        l.info('db_reader: failed to cache data!')
+    end
+end
+
+
+
+--[[
+======================================================================================
+                        Initialization in different game modes
+======================================================================================
+--]]
+
+
+
+if core:is_campaign() then
+    _init_runtime_dependencies()
 
     core:add_listener(
         'DBReaderCreation',
         'ScriptEventAllModsLoaded',
         true,
-        function()
-            db_reader = DBReader.new(db_address, registry, extractors, l.logger)
-            l.info('db_reader: created')
-
-            l.info('db_reader: trigger event ' .. created_event .. '...')
-            core:trigger_custom_event(created_event, {get_db_reader=db_reader})
-            l.info('db_reader: event ' .. created_event .. ' triggered')
-
-            db_reader:init(db_reader_data)
-
-            l.info('db_reader: trigger event ' .. initialized_event .. '...')
-            core:trigger_custom_event(initialized_event, {get_db_reader=db_reader})
-            l.info('db_reader: event ' .. initialized_event .. ' triggered')
-
-            registry_data = registry:get_data_for_cache()
-            db_reader_data = db_reader:get_data_for_cache()
-            cache:set(registry_data, db_reader_data)
-        end,
+        _setup_db_reader,
         false
     )
-end
 
-local function _setup_db_reader_in_frontend_mode(callback_name, max_count)
-    local calls_count = 0
-    local callback = function()
-        calls_count = calls_count + 1
-        ModLog('db_reader: repeated callback #' .. calls_count);
-        
-        if utils.check_is_db_constructed() then
-            tm:remove_real_callback(callback_name)
-            ModLog('db_reader: repeated callback removed - DB is accessible')
+else -- [frontend]
+     -- for other modes there should be guard clauses at the beginning of this script
 
-            _setup()
+    -- In frontend mode, DB will not be constructed after the 'ScriptEventAllModsLoaded' or 'UICreated' events triggered,
+    -- but we don't have any events after them until the game menu is shown (at least I don't know of any).
+    -- Therefore, we will have to run DBReader initialization right after user will see the menu. 
+    -- We can set up a callback at the earliest time the screen is displayed by registering tm:real_callback() with the smallest interval possible (1ms).
+    -- Unfortunately, this will lead to a slight freeze immediately after Menu is shown to the user,
+    -- and with internal logging enabled, to a long freeze.
 
-            return
-        end
-
-        if max_count > 10 then
-            tm:remove_real_callback(callback_name)
-            ModLog('db_reader: repeated callback removed - max retry count')
-        end
-    end
-
-    ---@cast tm timer_manager
-    core:add_ui_created_callback(function() tm:repeat_real_callback(callback, 100, callback_name); end)
-end
-
-
-if core:is_campaign() then
-    _setup()
-
-else -- frontend
-    _setup_db_reader_in_frontend_mode('setup_db_reader_in_frontend_mode', 10)
+    core:get_tm():callback(
+        function ()
+            if not utils.check_is_db_constructed(db_address) then
+                l.info('db_reader: failed to initialize in frontend mode - DB was not constructed')
+                return
+            end
+            _init_runtime_dependencies()
+            _setup_db_reader()
+        end,
+        1
+    )
 
 end
