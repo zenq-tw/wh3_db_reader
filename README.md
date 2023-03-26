@@ -14,24 +14,24 @@
 ## Introduction
 
 ### What is it?
-Lua mod for in-game database access at runtime.
+Modification for Total War Warhammer 3 to access the in-game database data at runtime.
 
 ### Why?
-CA gives modders only partial access to in-game data. This utility is designed to decrease the gap between what the game knows and what modders have access to, at least in terms of game database.
+Not all tables or related data can be accessed using the interfaces provided by CA, and if you are a brave person and decide that you **really** want to access them, then `DBReader` is for you.
 
-For one of my mods, I needed real-time data from some tables for which there is no interface provided by the developers. Usually in such situations, tables are simply extracted using RPFM and then used as is. However, I did not want the mod to work only with the vanilla game, or produce a bunch of submods for all occasions. This is how the idea of the DBReader utility was born.
-
-When I made the basic functionality, implemented the extraction of the tables I needed and successfully applied it to my mods that are not yet released on Steam, I thought that such a utility could be useful to the modding community and maybe someone would like to join to its maintenance and / or its development
+By using this, you can get new modding capabilities, achieve more compatibility with other mods, ~~get more problems with future game updates~~ and probably something else.
 
 ### How it works?
 
-The game itself does not use DB files at runtime. Instead, it parses the game's base tables, merges them with tables from mods, and then uses this data to create internal objects that it then works with. Interestingly, at the same time, it builds something like an array of meta-headers of the tables themselves, saves some initial data there and adds some links to in-game objects that used the data of these tables to build them.
+The game itself does not use DB files at runtime. Instead, it parses the game's base tables, merges them with tables from mods, and then uses this data to create internal objects that it then works with. It is interesting that after that the game, either as artifacts or for some internal purposes, creates something like an array of meta-headers of the tables themselves, saves some initial data there and adds some links to in-game objects that were used the data of these tables for its construction.
 
-DBReader as early as possible in the game loading process builds a registry of available tables and after that, according to the list of table requests, it tries to restore the merged tables from these "meta-headers" and in-game objects using the [`memreader`](https://github.com/Cpecific/twwh2-memreader) (kindly provided by CPecific). The table data is returned as a lua table with records count and sometimes with indexes built on them for ease of use.
+`DBReader` as early as possible in the game loading process builds a registry of available tables and after that, according to the list of table requests, it tries to restore the merged tables from these "meta-headers" and in-game objects using the [`memreader`](https://github.com/Cpecific/twwh2-memreader) (kindly provided by `CPecific`). 
+
+Table data can be retrieved via API as a lua table with some additional information for convenience.
 
 ### Status
 
-DBReader is currently in beta. It just works and I was able to use it in my mods, but bugs are still possible.
+`DBReader` is currently in beta. It just works and I was able to use it in my mods, but bugs are still possible.
 
 I would appreciate any feedback and bug reports.
 
