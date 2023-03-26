@@ -39,7 +39,7 @@ DBReader is currently in beta. It just works and I was able to use it in my mods
 I would appreciate any feedback and bug reports.
 
 ### Supported game modes:
-* campaign
+* campaign (single-player only)
 * frontend
 
 I have plans to support the battle mod, but not in the near future
