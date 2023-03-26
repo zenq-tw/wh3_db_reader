@@ -1,49 +1,13 @@
 local mr = assert(_G.memreader)
 local T = assert(core:load_global_script('script.db_reader.types'))  ---@module "script.db_reader.types"
 
-
---==================================================================================================================================--
---                                                          table extensions
---==================================================================================================================================--
-
-
-
-if not table.unpack then
-    table.unpack = unpack
-end
-
-
-function table.lookup_to_indexed(lookup_table)
-    local indexed = {}
-
-    local i = 1
-    for key, _ in pairs(lookup_table) do
-        indexed[i] = key
-        i = i + 1
-    end
-
-    return indexed
-end
-
-
---TODO: rewrite with memreader!
---Author: Vandy (Groove Wizard)
-function table.deepcopy(tbl)
-	local ret = {}
-	for k, v in pairs(tbl) do
-		ret[k] = type(v) == 'table' and table.deepcopy(v) or v
-	end
-	return ret
-end
-
-
-
---==================================================================================================================================--
---                                                          other stuff
---==================================================================================================================================--
-
-
 local utils = {}
+
+
+--==================================================================================================================================--
+--                                                          db related stuff
+--==================================================================================================================================--
+
 
 local base_shift = "044DF700"  -- 0x044DF700
 
@@ -111,6 +75,113 @@ function utils.read_string_CA(ptr, offset, isPtr, isWide, safeCapValue)
 
 	return ''  -- trash
 end
+
+
+---convert hex string address to correct string that can be used in memreader as address
+---@param hex_repr string
+---@return string
+---```
+---hex_address = '461F7D30'  -- or ('0x461F7D30')
+---ptr = mr.pointer(convert_hex_to_address(hex_address))
+---address = mr.tostring(ptr)  -- get address where pointer reference to
+---out(address)  -- 00000000461F7D30
+---```
+function utils.convert_hex_to_address(hex_repr)
+    -- "0x461F7D30"  ->  "461F7D30"
+    if hex_repr:starts_with('0x') then
+        hex_repr = hex_repr:sub(3, -1)
+    end
+
+    -- "461F7D30"  ->  { "30", "7D", "1F", "46" }
+    local chunks = {}
+    local chunks_count = 0
+    for i = #hex_repr - 1 , 0, -2 do
+        chunks_count = chunks_count + 1
+        chunks[chunks_count] = hex_repr:sub(i, i+1)
+    end
+
+    -- { "30", "7D", "1F", "46" }  ->  { 48, 125, 31, 70 }
+    local hex_chunks = {}
+    for i=1, chunks_count do
+        hex_chunks[i] = tonumber(chunks[i], 16)
+    end
+
+    -- { 48, 125, 31, 70 }  ->  { 48, 125, 31, 70, 0, 0, 0, 0 }
+    for i = chunks_count + 1, 8 do
+        hex_chunks[i] = 0
+    end
+
+    -- { 48, 125, 31, 70, 0, 0, 0, 0 }  ->  "\48\125\31\70\0\0\0\0"  ==  address 0x00000000461F7D30
+    local res = ''
+    for i=1, 8 do
+        res = res .. string.char(hex_chunks[i])
+    end
+
+    return res
+end
+
+
+utils.null_address = utils.convert_hex_to_address('0x00')
+
+
+---@param db_address pointer
+---@return boolean is_constructed
+function utils.check_is_db_constructed(db_address)
+    return pcall(
+        function ()
+            assert(not mr.eq(mr.read_pointer(db_address), utils.null_address))
+        end
+    )
+end
+
+
+---@param index {[string]: Key[]}
+---@param value string
+---@param table_key Key
+---@return nil
+function utils.include_key_in_index(index, value, table_key)
+    if index[value] == nil then
+        index[value] = {}
+    end
+    table.insert(index[value], table_key)
+end
+
+
+---map columns to rows from raw sources
+---@param rows any
+---@param columns any
+---@param key_column string
+---@param rows_count? integer
+---@param columns_count? integer
+---@return table<Key, Record>
+function utils.make_table_data(rows, columns, key_column, rows_count, columns_count)
+    rows_count = rows_count or #rows_count
+    columns_count = columns_count or #columns_count
+
+    ---@type table<string, Record>
+    local records = {}
+
+    local row, record
+    for i=1, rows_count do
+        row = rows[i]
+        record = {}
+
+        for j=1, columns_count do
+            record[columns[j]] = row[j]
+        end
+
+        records[record[key_column]] = record
+    end
+
+    return records
+end
+
+
+
+--==================================================================================================================================--
+--                                                          other stuff
+--==================================================================================================================================--
+
 
 
 function utils.merge_indexed_tables(indexed1, indexed2)
@@ -245,110 +316,11 @@ function utils.dump_table(t)
 end
 
 
----@param index {[string]: Key[]}
----@param value string
----@param table_key Key
----@return nil
-function utils.include_key_in_index(index, value, table_key)
-    if index[value] == nil then
-        index[value] = {}
-    end
-    table.insert(index[value], table_key)
-end
-
-
----convert hex string address to correct string that can be used in memreader as address
----@param hex_repr string
----@return string
----```
----hex_address = '461F7D30'  -- or ('0x461F7D30')
----ptr = mr.pointer(convert_hex_to_address(hex_address))
----address = mr.tostring(ptr)  -- get address where pointer reference to
----out(address)  -- 00000000461F7D30
----```
-function utils.convert_hex_to_address(hex_repr)
-    -- "0x461F7D30"  ->  "461F7D30"
-    if hex_repr:starts_with('0x') then
-        hex_repr = hex_repr:sub(3, -1)
-    end
-
-    -- "461F7D30"  ->  { "30", "7D", "1F", "46" }
-    local chunks = {}
-    local chunks_count = 0
-    for i = #hex_repr - 1 , 0, -2 do
-        chunks_count = chunks_count + 1
-        chunks[chunks_count] = hex_repr:sub(i, i+1)
-    end
-
-    -- { "30", "7D", "1F", "46" }  ->  { 48, 125, 31, 70 }
-    local hex_chunks = {}
-    for i=1, chunks_count do
-        hex_chunks[i] = tonumber(chunks[i], 16)
-    end
-
-    -- { 48, 125, 31, 70 }  ->  { 48, 125, 31, 70, 0, 0, 0, 0 }
-    for i = chunks_count + 1, 8 do
-        hex_chunks[i] = 0
-    end
-
-    -- { 48, 125, 31, 70, 0, 0, 0, 0 }  ->  "\48\125\31\70\0\0\0\0"  ==  address 0x00000000461F7D30
-    local res = ''
-    for i=1, 8 do
-        res = res .. string.char(hex_chunks[i])
-    end
-
-    return res
-end
-
-
-utils.null_address = utils.convert_hex_to_address('0x00')
-
-
----@param db_address pointer
----@return boolean is_constructed
-function utils.check_is_db_constructed(db_address)
-    return pcall(
-        function ()
-            assert(not mr.eq(mr.read_pointer(db_address), utils.null_address))
-        end
-    )
-end
-
-
----map columns to rows from raw sources
----@param rows any
----@param columns any
----@param key_column string
----@param rows_count? integer
----@param columns_count? integer
----@return table<Key, Record>
-function utils.make_table_data(rows, columns, key_column, rows_count, columns_count)
-    rows_count = rows_count or #rows_count
-    columns_count = columns_count or #columns_count
-
-    ---@type table<string, Record>
-    local records = {}
-
-    local row, record
-    for i=1, rows_count do
-        row = rows[i]
-        record = {}
-
-        for j=1, columns_count do
-            record[columns[j]] = row[j]
-        end
-
-        records[record[key_column]] = record
-    end
-
-    return records
-end
-
-
 
 --==================================================================================================================================--
 --                                                   Public namespace initialization
 --==================================================================================================================================--
+
 
 
 return utils
