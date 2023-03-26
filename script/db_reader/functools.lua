@@ -40,6 +40,20 @@ function functools.safe(func, ...)
 end
 
 
+---```lua
+---XOR (^)
+---xor(true, true) = false
+---xor(true, false) = true
+---xor(false, true) = true
+---xor(false, false) = false
+---```
+---@param value1 any
+---@param value2 any
+---@return boolean
+function functools.xor(value1, value2)
+    return (value1 or value2) and not (value1 and value2)
+end
+
 
 --==================================================================================================================================--
 --                                                   Public namespace initialization
