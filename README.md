@@ -250,7 +250,7 @@ Field := string | number | boolean
 #### `TableIndexes`
 ```
 TableIndexes := {
-    [Column]: { [Field]: { count: integer, array: Key[] } }
+    [Column]: { [Field]: { 'count': integer, 'array': Key[] } }
 }
 ```
 #### `TableDataExtractor`
