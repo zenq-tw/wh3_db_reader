@@ -63,12 +63,15 @@ local function test()
             end
 
             ModLog('count of table.indexes=' .. indexes_count)
+
+            local table_keys_array
             for field, values_index in pairs(table.indexes) do
                 ModLog(field .. ':')
                 for value, table_keys in pairs(values_index) do
-                    ModLog('  ' .. value .. ':')
-                    for i, key in pairs(table_keys) do
-                        ModLog('    ' .. i .. ': ' .. key)
+                    ModLog('  ' .. value .. ' (' .. table_keys.count .. '):')
+                    table_keys_array = table_keys.array
+                    for i=1, table_keys.count do
+                        ModLog('    ' .. i .. ': ' .. table_keys_array[i])
                     end
                 end
             end
