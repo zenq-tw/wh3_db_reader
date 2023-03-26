@@ -63,6 +63,7 @@ I would appreciate any feedback and bug reports.
 
 ## Supported DB tables <a name="supported-tables"></a>:
 > This list will be updated as support for new tables is added.
+* action_results_additional_outcomes (partial)
 * agent_actions (partial)
 * armed_citizenry_unit_groups
 * armed_citizenry_units_to_unit_groups_junctions
