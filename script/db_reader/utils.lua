@@ -156,8 +156,8 @@ end
 ---@param columns_count? integer
 ---@return table<Key, Record>
 function utils.make_table_data(rows, columns, key_column, rows_count, columns_count)
-    rows_count = rows_count or #rows_count
-    columns_count = columns_count or #columns_count
+    rows_count = rows_count or #rows
+    columns_count = columns_count or #columns
 
     ---@type table<string, Record>
     local records = {}
