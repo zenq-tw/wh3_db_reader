@@ -57,7 +57,7 @@ I would appreciate any feedback and bug reports.
     * some of them I decided not to include because of their uselessness. For example, all columns related to localization. However, if you really need them in some table, let me know
     * sometimes reverse engineering gets so complicated that I can't figure out how internal game objects are related to a table fields. If you succeed where I failed -> text me or create a PR and I will gladly accept your help
 
-* **The obvious disadvantage of reverse engineering here is that potentially with each update of the game something may not work, some tables may become inaccessible, some fields may disappear, and new fields (and especially tables) may be added late or not added at all. Probably I'm painting too grim a picture, but better for you be prepared for this if you plan to use the utility in your modifications. If shit can happen, it will happen someday. So don't blame me for that)**
+* **The obvious disadvantage of reverse engineering here is that potentially with each game update something may not work, some tables may become inaccessible, some fields may disappear, and new fields (and especially tables) may be added late or not added at all. Probably I'm painting too grim a picture, but better for you be prepared for this if you plan to use the utility in your modifications. If shit can happen, it will happen someday. So don't blame me for that)**
 
 
 
