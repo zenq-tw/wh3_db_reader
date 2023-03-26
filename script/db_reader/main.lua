@@ -2,6 +2,8 @@ local collections = assert(core:load_global_script('script.db_reader.collections
 local validators = assert(core:load_global_script('script.db_reader.validators'))  ---@module "script.db_reader.validators"
 local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@module "script.db_reader.utils"
 
+assert(core:load_global_script('script.db_reader.extensions'))  ---@module "script.db_reader.extensions"
+
 
 --[[
 ======================================================================================
