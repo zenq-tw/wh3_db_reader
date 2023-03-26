@@ -1,3 +1,4 @@
+local functools = assert(core:load_global_script('script.db_reader.functools'))  ---@module "script.db_reader.functools"
 local collections = assert(core:load_global_script('script.db_reader.collections'))  ---@module "script.db_reader.collections"
 local validators = assert(core:load_global_script('script.db_reader.validators'))  ---@module "script.db_reader.validators"
 local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@module "script.db_reader.utils"
@@ -215,13 +216,23 @@ function DBReader:_load_requested_tables()
             self._log:debug('table already loaded -> skip')
         else
             meta = self._registry.tables[table_name]
-            self:_load_table(meta)
+            self:_load_table_safe(meta)
         end
 
         self._log:leave_context()
     end
 
     self._log:debug('done'):leave_context()
+end
+
+
+---@protected
+---@param meta DBTableMeta
+function DBReader:_load_table_safe(meta)
+    local is_success, error_msg = functools.safe(self._process_table, self, meta)
+    if not is_success then
+        self._log:error('failed to load table data:', error_msg)
+    end
 end
 
 
@@ -338,9 +349,9 @@ end
 function DBReader:_load_table_mid_game(table_name)
     self._log:enter_context('load table mid-game', table_name)
 
-    self:_load_table(self._registry.tables[table_name])
+    self:_load_table_safe(self._registry.tables[table_name])
 
-    self._log:info('loaded'):leave_context()
+    self._log:info('done'):leave_context()
 end
 
 

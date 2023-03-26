@@ -32,3 +32,17 @@ function table.deepcopy(tbl)
 	return ret
 end
 
+
+---@alias PackedResults {n: integer, [integer]: any}
+
+if not table.pack then
+    ---@param ... any
+    ---@return PackedResults
+    function table_pack(...)
+        -- Returns a new table with parameters stored into an array, with field "n" being the total number of parameters
+        local t = {...}
+        t.n = #t
+        return t
+    end
+    table.pack = table_pack
+end

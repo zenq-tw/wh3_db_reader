@@ -1,6 +1,7 @@
 local mr = assert(_G.memreader)
 
 local T = assert(core:load_global_script('script.db_reader.types'))  ---@module "script.db_reader.types"
+local functools = assert(core:load_global_script('script.db_reader.functools'))  ---@module "script.db_reader.functools"
 local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@module "script.db_reader.utils"
 
 
@@ -56,9 +57,16 @@ function DBRegistry:init(data)
     else
         self._log:debug('------------------------------------------------------------------------------------'):info('reading db tables names')
     
-        count, meta = self:_get_db_tables(self._db_address)
-        self.count = count
-        self.tables = meta
+        local is_success, err_msg, results = functools.safe(self._get_db_tables, self, self._db_address)
+        if not is_success then
+            self._log:error('failed:', err_msg)
+            return
+        end
+
+        ---@cast results {[1]: integer, [2]: {[string]: DBTableMeta}}
+
+        self.count = results[1]
+        self.tables = results[2]
     end
 
     self._log:info('done'):leave_context()
