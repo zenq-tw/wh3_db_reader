@@ -1,5 +1,4 @@
 local validators = assert(core:load_global_script('script.db_reader.validators'))  ---@module "script.db_reader.validators"
-local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@module "script.db_reader.utils"
 
 --[[
 ======================================================================================
@@ -16,26 +15,28 @@ local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@mod
 ExtractorsRegistry = {
     _extractors_dir='/script/db_reader/extractors/tables/'
 }
-ExtractorsRegistry.__index = ExtractorsRegistry
 
 
 ---@protected
 ---@nodiscard
+---@generic Cls
+---@param cls Cls
 ---@param db_registry DBRegistry 
 ---@param logger LoggerCls
----@return ExtractorsRegistry
+---@return Cls
 ---ONLY FOR INTERNAL USAGE
-function ExtractorsRegistry.new(db_registry, logger)
-    local self = setmetatable({}, ExtractorsRegistry)
-    self._log = logger
+function ExtractorsRegistry.new(cls, db_registry, logger)
+    logger:enter_context('extractors: new')
 
-    self._log:enter_context('extractors: new')
+    cls.__index = cls
+    local instance = setmetatable({}, cls)
 
-    self._db_registry = db_registry
-    self._extractors = {}
+    instance._log = logger
+    instance._db_registry = db_registry
+    instance._extractors = {}
 
-    self._log:debug('created'):leave_context()
-    return self
+    logger:debug('created'):leave_context()
+    return instance
 end
 
 
@@ -83,31 +84,42 @@ end
 function ExtractorsRegistry:register_table_extractor(table_name, columns, key_column_id, extractor, nullable_column_ids)
     self._log:enter_context('extractors: register extractor', table_name)
 
+    if not is_string(table_name) then
+        self._log:error('invalid argument - table_name: must be a string, not', type(table_name)):leave_context()
+        return false
+    end
+
+
     is_valid = validators.validate_table_columns(columns, key_column_id, nullable_column_ids, self._log)
     if not is_valid then
         self._log:leave_context()
         return false
     end
     
+
     if self._extractors[table_name] ~= nil then
         self._log:error('attempting to overwrite already registered extractor!'):leave_context()
         return false
     end
 
-    self._extractors[table_name] = extractor
-    self._db_registry.tables[table_name].columns = columns
-    local lkp = table.indexed_to_lookup(columns)  ---@cast lkp table
-    self._db_registry.tables[table_name].columns_lookup = lkp 
-    self._db_registry.tables[table_name].key_column = columns[key_column_id]
 
-    local nullable_column_lookup = {}
+    self._extractors[table_name] = extractor
+
+    local table_meta = self._db_registry.tables[table_name]
+    table_meta.columns = columns
+    table_meta.key_column = columns[key_column_id]
+
+    local lkp = table.indexed_to_lookup(columns)  ---@cast lkp table
+    table_meta.columns_lookup = lkp 
+
+    local nullable_column_ids_lookup = {}
     if nullable_column_ids ~= nil then
         for i=1, #nullable_column_ids do
-            nullable_column_lookup[nullable_column_ids[i]] = true
+            nullable_column_ids_lookup[nullable_column_ids[i]] = true
         end
     end
 
-    self._db_registry.tables[table_name].nullable_columns_ids_lookup = nullable_column_lookup
+    table_meta.nullable_columns_ids_lookup = nullable_column_ids_lookup
     
     self._log:info('successfully registered'):leave_context()
     return true

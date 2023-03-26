@@ -119,7 +119,7 @@ local db_reader  ---@type DBReader
 local function _init_runtime_dependencies()
     registry:init(registry_data)
 
-    extractors = ExtractorsRegistry.new(registry, l.logger)
+    extractors = ExtractorsRegistry:new(registry, l.logger)
     extractors:init()
 end
 
