@@ -42,6 +42,28 @@ function DBRegistry.new(db_address, logger)
 end
 
 
+---@param old_table DBTableMeta
+---@return DBTableDumpedMeta
+local function _prepare_table_for_dump(old_table)
+    local new_table = table.deepcopy(old_table)
+    new_table.ptr_hex = mr.tostring(new_table.ptr)
+    new_table.ptr = nil
+
+    return new_table
+end
+
+
+---@param restored_table DBTableDumpedMeta
+---@return DBTableMeta
+local function _prepare_table_restored_from_dump(restored_table)
+    local new_table = table.deepcopy(restored_table)
+    new_table.ptr = tonumber(new_table.ptr_hex, 16)
+    new_table.ptr_hex = nil
+
+    return new_table
+end
+
+
 ---@protected
 ---@param data? DBRegistryDumpedData
 ---ONLY FOR INTERNAL USAGE
@@ -50,9 +72,8 @@ function DBRegistry:init(data)
 
     if data then
         self.count = data.count
-        for name, restored_table in data.tables do
-            restored_table.ptr = tonumber(restored_table.ptr_hex, 16)
-            self.tables[name] = restored_table
+        for name, restored_table in pairs(data.tables) do
+            self.tables[name] = _prepare_table_restored_from_dump(restored_table)
         end
     else
         self._log:debug('------------------------------------------------------------------------------------'):info('reading db tables names')
@@ -81,12 +102,8 @@ function DBRegistry:get_data_for_cache()
     self._log:enter_context('registry'):debug('collecting cache data')
 
     local prepared_tables = {}
-    local new_table
     for name, old_table in pairs(self.tables) do
-        new_table = table.deepcopy(old_table)
-        new_table.ptr_hex = mr.tostring(new_table.ptr)
-        new_table.ptr = nil
-        prepared_tables[name] = new_table
+        prepared_tables[name] = _prepare_table_for_dump(old_table)
     end
 
     local data = {
