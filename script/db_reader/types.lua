@@ -15,6 +15,7 @@
 ---@field table_name string name of table for which extractor is registered
 ---@field columns string[] array of table columns
 ---@field key_column_id number table key column (position in `columns` array)
+---@field nullable_column_ids integer[] | nil table columns whose values can be <nil> (positions in `columns` array)
 ---@field extractor TableDataExtractor function that will extract table data
 
 ---@alias Record {[Column]: Field}
@@ -34,6 +35,7 @@
 ---@field ptr pointer pointer to DB Table object itself
 ---@field columns Column[]
 ---@field columns_lookup {Column: true}
+---@field nullable_columns_ids_lookup {integer: true}
 ---@field key_column Column
 
 

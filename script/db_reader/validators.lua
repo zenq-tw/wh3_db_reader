@@ -1,8 +1,9 @@
 ---@param columns string[]
 ---@param key_column_id number
+---@param nullable_column_ids integer[] | nil
 ---@param logger LoggerCls
 ---@return boolean is_valid
-local function validate_columns(columns, key_column_id, logger)
+local function validate_columns(columns, key_column_id, nullable_column_ids, logger)
     if columns == nil then
         logger:error('invalid argument - columns: missing')
         return false
@@ -27,13 +28,14 @@ local function validate_columns(columns, key_column_id, logger)
         end
     end
 
-    if #columns == 0 then
+    local columns_count = #columns
+    if columns_count == 0 then
         logger:error('invalid argument - columns: zero-length')
         return false
     end
 
     if not is_number(key_column_id) or key_column_id <= 0 then
-        logger:error('invalid argument - key_column_id: must be positive number, less or equal then number of columns (' .. #columns .. '), but not', key_column_id, type(key_column_id))
+        logger:error('invalid argument - key_column_id: must be positive number, less or equal then number of columns (', columns_count, '), but not', key_column_id, type(key_column_id))
         return false
     end
 
@@ -41,6 +43,44 @@ local function validate_columns(columns, key_column_id, logger)
         logger:error('invalid argument - key_column_id: column not found with value', key_column_id)
         return false
     end
+
+    if nullable_column_ids == nil then return true end
+
+
+    if not is_table(nullable_column_ids) then
+        logger:error('invalid argument - nullable_column_ids: must be integer array (Table<number, number>), but not', type(nullable_column_ids))
+        return false
+    end
+
+    for i, column_id in pairs(nullable_column_ids) do
+        if not is_number(i) then
+            logger:error('invalid nullable_column_ids table structure - lua-table key type must be number, but not', type(i))
+            logger:info('must be string array (Table<number, string>)')
+            return false
+        end
+
+        if not is_number(column_id) then
+            logger:error('invalid nullable_column_ids table structure - lua-table value type must be number, but not', type(column_id))
+            logger:info('must be string array (Table<number, string>)')
+            return false
+        end
+
+        if columns[column_id] == nil then
+            logger:error('invalid argument - nullable_column_ids: column with such id not found in columns', column_id)
+            return false
+        end
+
+        if column_id == key_column_id then
+            logger:error('invalid argument - nullable_column_ids: key_column_id cannot be nil', column_id)
+            return false
+        end
+    end
+
+    if #nullable_column_ids >= columns_count then
+        logger:error('invalid argument - nullable_column_ids: all columns count less then nullable columns ids count (', #nullable_column_ids, '>', columns_count, ')')
+        return false
+    end
+
 
     return true
 end
@@ -74,8 +114,9 @@ local function check_builder_results(table_meta, results, logger)
         return false
     end
 
+    local columns_count = #table_meta.columns
     local row_pos = 0
-    local field_pos, type_
+    local type_
 
     for i, row in pairs(rows) do
         row_pos = row_pos + 1
@@ -91,18 +132,16 @@ local function check_builder_results(table_meta, results, logger)
             return false
         end
 
-        field_pos = 0 
-        for j, field_value in pairs(row) do
-            field_pos = field_pos + 1
-            type_ = type(field_value)
+        for field_pos=1, columns_count do
+            type_ = type(row[field_pos])
 
-            if not is_number(j) then
-                logger:error('invalid row at', row_pos, '- invalid field at', field_pos, ': lua-table key type must be number, not', type(j))
-                logger:info('expected structure: Table<number, Table<number, string | number | boolean> >')
-                return false
-            end
+            if type_ == "nil" then
+                if not table_meta.nullable_columns_ids_lookup[field_pos] then
+                    logger:error('invalid row at', row_pos, '- invalid field at', field_pos, ': nil value not allowed for column', table_meta.columns_lookup[field_pos])
+                    return false
+                end
 
-            if not (
+            elseif not (
                 type_ == 'string'
                 or type_ == 'number'
                 or type_ == 'boolean' 
@@ -113,10 +152,6 @@ local function check_builder_results(table_meta, results, logger)
             end
         end
 
-        if #row ~= #table_meta.columns then
-            logger:error('invalid row at', row_pos, '- number of row fields not equal number of columns:', #row, '!=', #table_meta.columns)
-            return false
-        end
     end
 
     ------@alias ExtraMapping {[Column]: table <Field, Key[]>}

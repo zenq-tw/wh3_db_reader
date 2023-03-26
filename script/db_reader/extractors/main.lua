@@ -78,11 +78,12 @@ end
 ---@param columns string[] array of table columns
 ---@param key_column_id number table key column (position in `columns` array)
 ---@param extractor TableDataExtractor function that will extract table data
+---@param nullable_column_ids integer[] | nil table columns whose values can be <nil> (positions in `columns` array)
 ---@return boolean is_registered  
-function ExtractorsRegistry:register_table_extractor(table_name, columns, key_column_id, extractor)
+function ExtractorsRegistry:register_table_extractor(table_name, columns, key_column_id, extractor, nullable_column_ids)
     self._log:enter_context('extractors: register extractor', table_name)
 
-    is_valid = validators.validate_table_columns(columns, key_column_id, self._log)
+    is_valid = validators.validate_table_columns(columns, key_column_id, nullable_column_ids, self._log)
     if not is_valid then
         self._log:leave_context()
         return false
@@ -98,6 +99,15 @@ function ExtractorsRegistry:register_table_extractor(table_name, columns, key_co
     local lkp = table.indexed_to_lookup(columns)  ---@cast lkp table
     self._db_registry.tables[table_name].columns_lookup = lkp 
     self._db_registry.tables[table_name].key_column = columns[key_column_id]
+
+    local nullable_column_lookup = {}
+    if nullable_column_ids ~= nil then
+        for i=1, #nullable_column_ids do
+            nullable_column_lookup[nullable_column_ids[i]] = true
+        end
+    end
+
+    self._db_registry.tables[table_name].nullable_columns_ids_lookup = nullable_column_lookup
     
     self._log:info('successfully registered'):leave_context()
     return true
@@ -158,7 +168,8 @@ function ExtractorsRegistry:_process_extractor_path(i, path)
         info.table_name,
         info.columns,
         info.key_column_id,
-        info.extractor
+        info.extractor,
+        info.nullable_column_ids
     )
     if not is_registered then
         self._log:debug('failed register extractor for:', info.table_name)
