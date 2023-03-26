@@ -45,7 +45,7 @@ I would appreciate any feedback and bug reports.
         * single-player only _(at least for now)_
     * frontend
         * due to technical reasons, we only start reading internal data when the UI is shown to the user, this leads to a slight freeze when opening the start screen (at least on my laptop)
-    > idk if anyone really needs battle mod support support, but if someone needs it, then I can try to add (just haven't tested it yet). Also not sure if `memreader` supports it at all
+    > idk if anyone really needs battle mod support, but if someone needs it, then I can try to add (just haven't tested it yet). Also not sure if `memreader` supports it at all
 
 * Not all tables will be available:
     * I plan to provide access only to that tables, that cant be accessed in any other way
