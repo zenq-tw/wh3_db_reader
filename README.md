@@ -46,6 +46,7 @@ I have plans to support the battle mod, but not in the near future
 
 ### Supported DB tables <a name="supported-tables"></a>:
 > This list will be updated as support for new tables is added.
+* agent_actions
 * armed_citizenry_unit_groups
 * armed_citizenry_units_to_unit_groups_junctions
 * building_level_armed_citizenry_junctions
