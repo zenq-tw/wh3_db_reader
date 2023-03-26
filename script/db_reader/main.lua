@@ -229,7 +229,7 @@ end
 ---@protected
 ---@param meta DBTableMeta
 function DBReader:_load_table_safe(meta)
-    local is_success, error_msg = functools.safe(self._process_table, self, meta)
+    local is_success, error_msg = functools.safe(self._load_table, self, meta)
     if not is_success then
         self._log:error('failed to load table data:', error_msg)
     end
