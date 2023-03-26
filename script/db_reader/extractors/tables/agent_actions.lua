@@ -5,7 +5,7 @@ local func = assert(core:load_global_script('script.db_reader.functools'))  ---@
 local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@module "script.db_reader.utils"
 
 
----@alias Record__agent_actions {id: string, building_level: string, unit_group: string}
+---@alias Record__agent_actions {unique_id: string, ability: string, agent: string, critical_failure: string, failure: string, opportune_failure: string, success: string, critical_success: string, cannot_fail: string, critical_failure_proportion_modifier: number, opportune_failure_proportion_modifier: number, critical_success_proportion_modifier: number, chance_of_success: integer, icon_path: string}
 
 ---@class DBTable__agent_actions: DBTable
 ---@field records table <string, Record__agent_actions>
