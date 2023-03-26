@@ -1,7 +1,7 @@
 {
   "settings_text": {
     "diagnostics_files_to_ignore": "",
-    "import_files_to_ignore": ".vscode\n.git\nwh3_db_reader.sublime-project"
+    "import_files_to_ignore": ".vscode\n.git\nwh3_db_reader.sublime-project\nscript/_lib/mod/test.lua\nscript/frontend/mod/test_frontend.lua\nscript/test_tables_loading.lua\nscript/campaign/mod/test_campaign.lua"
   },
   "settings_string": {},
   "settings_bool": {
