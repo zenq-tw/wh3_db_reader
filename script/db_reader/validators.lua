@@ -1,9 +1,12 @@
+local validators = {}
+
+
 ---@param columns string[]
 ---@param key_column_id number
 ---@param nullable_column_ids integer[] | nil
 ---@param logger LoggerCls
 ---@return boolean is_valid
-local function validate_columns(columns, key_column_id, nullable_column_ids, logger)
+function validators.validate_columns(columns, key_column_id, nullable_column_ids, logger)
     if columns == nil then
         logger:error('invalid argument - columns: missing')
         return false
@@ -91,7 +94,7 @@ end
 ---@param results RawTableData | nil
 ---@param logger LoggerCls
 ---@return boolean is_valid, integer? rows_count
-local function check_builder_results(table_meta, results, logger)
+function validators.check_builder_results(table_meta, results, logger)
     if results == nil then
         logger:error('builder didnt provide a results - something goes wrong?')
         return false
@@ -154,7 +157,7 @@ local function check_builder_results(table_meta, results, logger)
 
     end
 
-    ------@alias ExtraMapping {[Column]: table <Field, Key[]>}
+
 
     if results.indexes ~= nil then
         
@@ -223,7 +226,7 @@ end
 ---@param table_meta? DBTableMeta
 ---@param logger LoggerCls
 ---@return boolean
-local function is_valid_table_meta(table_meta, logger)
+function validators.is_valid_table_meta(table_meta, logger)
     if table_meta == nil then
         logger:error('ERROR: table meta not found -> skip')
         return false
@@ -244,6 +247,11 @@ local function is_valid_table_meta(table_meta, logger)
         return false
     end
 
+    if table_meta.columns_lookup == nil then
+        logger:error('ERROR: invalid table meta: no columns_lookup -> skip')
+        return false
+    end
+
     if table_meta.key_column == nil then
         logger:error('ERROR: invalid table meta: no key_column -> skip')
         return false
@@ -256,7 +264,7 @@ end
 ---@param info? ExtractorInfo
 ---@param logger LoggerCls
 ---@return boolean
-local function is_valid_extractor_info(info, logger)
+function validators.is_valid_extractor_info(info, logger)
     if info == nil then
         logger:error('ERROR: no extractor info returned -> skip')
         return false
@@ -282,8 +290,13 @@ local function is_valid_extractor_info(info, logger)
         return false
     end
 
-    if not is_function(info.extractor) == nil then
+    if not is_function(info.extractor) then
         logger:error('ERROR: invalid extractor info returned: no valid extractor function -> skip')
+        return false
+    end
+
+    if info.nullable_column_ids ~= nil and not is_table(info.nullable_column_ids) then
+        logger:error('ERROR: invalid extractor info returned: nullable_column_ids is not a nil, but also it is not a table -> skip')
         return false
     end
 
@@ -291,9 +304,4 @@ local function is_valid_extractor_info(info, logger)
 end
 
 
-return {
-    validate_table_columns = validate_columns,
-    check_builder_results = check_builder_results,
-    is_valid_table_meta = is_valid_table_meta,
-    is_valid_extractor_info = is_valid_extractor_info,
-}
+return validators
