@@ -209,6 +209,7 @@ Specific table data extractor registration method
     |2|columns|`string[]`|array of table columns|
     |3|key_column_id|`number`|table key column (position in `columns` array)|
     |4|extractor|[`TableDataExtractor`](#TableDataExtractor)|function that will extract table data|
+    |5|nullable_column_ids|`integer[]?`|`[optional]` table columns whose values can be `nil` (positions in `columns` array)|
 
 * **returns:**
     |pos| name   | type | description |

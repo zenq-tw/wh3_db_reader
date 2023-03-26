@@ -186,11 +186,12 @@ end
 ---@param columns string[] array of table columns
 ---@param key_column_id number table key column (position in `columns` array)
 ---@param extractor TableDataExtractor function that will extract table data
+---@param nullable_column_ids integer[] | nil table columns whose values can be <nil> (positions in `columns` array)
 ---@return boolean is_registered  
-function DBReader:register_table_extractor(table_name, columns, key_column_id, extractor)
+function DBReader:register_table_extractor(table_name, columns, key_column_id, extractor, nullable_column_ids)
     self._log:enter_context('db: register extractor', table_name)
 
-    local is_registered = self._extractors:register_table_extractor(table_name, columns, key_column_id, extractor)
+    local is_registered = self._extractors:register_table_extractor(table_name, columns, key_column_id, extractor, nullable_column_ids)
 
     self._log:leave_context()
     return is_registered
