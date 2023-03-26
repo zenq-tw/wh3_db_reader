@@ -121,8 +121,7 @@ core:add_listener(
         table_data = db_table.records
         out('table data extracted: ' .. table_name .. ' (' .. table.count .. ' records)')
 
-        -- also db_table has `indexes` field that you might be interested in:
-        -- db_table.indexes : nil | { Column: { Value: TableKey[] } }
+        -- also db_table has `indexes` field that you might be interested in
 
         -- ... anything else you want to do with that data ...
     end,
