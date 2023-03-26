@@ -1,8 +1,8 @@
 # DBReader - TW:Warhammer3 utility
 
 1. [Introduction](#introduction)
-2. [Status](#status)
-    * [List of supported tables](#supported-tables)
+2. [Limitations](#limitations)
+2. [List of supported tables](#supported-tables)
 3. [Usage](#usage)
 4. [API](#api)
 5. [Future Plans](#future-plans)
@@ -29,22 +29,39 @@ The game itself does not use DB files at runtime. Instead, it parses the game's 
 
 DBReader as early as possible in the game loading process builds a registry of available tables and after that, according to the list of table requests, it tries to restore the merged tables from these "meta-headers" and in-game objects using the [`memreader`](https://github.com/Cpecific/twwh2-memreader) (kindly provided by CPecific). The table data is returned as a lua table with records count and sometimes with indexes built on them for ease of use.
 
-**The obvious disadvantage of this approach is that potentially with each update I will have to edit the extractors code and / or the way to get the base address of the database. This will take time. So keep this in mind if you plan to use DBReader in your mods.**
-
-
-## Status
+### Status
 
 DBReader is currently in beta. It just works and I was able to use it in my mods, but bugs are still possible.
 
 I would appreciate any feedback and bug reports.
 
-### Supported game modes:
-* campaign (single-player only)
-* frontend
+## Limitations
 
-I have plans to support the battle mod, but not in the near future
+* Supported game versions:
+    * 2.4
 
-### Supported DB tables <a name="supported-tables"></a>:
+* Supported game modes:
+    * campaign 
+        * single-player only _(at least for now)_
+    * frontend
+        * due to technical reasons, we only start reading internal data when the UI is shown to the user, this leads to a slight freeze when opening the start screen (with logging enabled, to a big freeze)
+        > idk if anyone really needs battle mod support support, but if someone needs it, then I can try to add (just haven't tested it yet). Also not sure if `memreader` supports it at all
+
+* Not all tables will be available:
+    * I plan to provide access only to that tables, that cant be accessed in any other way
+    * adding a database table to DBReader sometimes requires a lot of time to reverse engineer the game, a bit of luck and experience. Therefore, all tables will never be available (there are probably too many). If you're missing something specific, let me know and if there is a technical possibility at all, I will try to provide access to it someday
+    * it seems that we dont have access to `bonus_value_id_*` tables  _(at least for v2.4)_
+        > table data headers exist, but there are no table records in them. So far, all my attempts to obtain this data in another way have not been successful
+
+* Not all columns may be present:
+    * some of them I decided not to include because of their uselessness. For example, all columns related to localization. However, if you really need them in some table, let me know
+    * sometimes reverse engineering gets so complicated that I can't figure out how internal game objects are related to a table fields. If you succeed where I failed -> text me or create a PR and I will gladly accept your help
+
+* **The obvious disadvantage of reverse engineering is that potentially with each update something may not work, some tables may become unavailable, some fields may disappear, and new fields (and especially tables) may be added with a delay. Keep this in mind if you plan to use DBReader in your mods.**
+
+
+
+## Supported DB tables <a name="supported-tables"></a>:
 > This list will be updated as support for new tables is added.
 * agent_actions (partial)
 * armed_citizenry_unit_groups
