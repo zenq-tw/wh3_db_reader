@@ -1,4 +1,3 @@
-local mr = assert(_G.memreader)
 local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@module "script.db_reader.utils"
 
 --TODO: make base SessionCache class
@@ -12,7 +11,6 @@ local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@mod
 
 ---@class DBReaderSessionCache
 ---@field protected _cache_file_path string
----@field protected _cache_header string
 ---@field protected _log LoggerCls
 ---@field protected _data DBReaderSessionData
 ---@field protected __index DBReaderSessionCache
@@ -29,18 +27,19 @@ DBReaderSessionCache.__index = DBReaderSessionCache
 ---@field db_reader DBReaderData
 
 
+local _CACHE_STORED_FLAG = 'DB_READER_CACHE_STORED_FLAG'
+
+
 ---@protected
 ---@nodiscard
----@param db_address pointer
 ---@param logger LoggerCls
 ---@return DBReaderSessionCache
 ---ONLY FOR INTERNAL USAGE
-function DBReaderSessionCache.new(db_address, logger)
+function DBReaderSessionCache.new(logger)
     local self = setmetatable({}, DBReaderSessionCache)
 
     self._cache_file_path = 'data/.db_reader__cache.lua'
     self._log = logger
-    self._cache_header = mr.tostring(db_address)
     self._data = {}
 
     return self
@@ -54,12 +53,18 @@ end
 function DBReaderSessionCache:init(data)
     self._log:enter_context('cache: init')
 
-    if data then
-        self._data = data
+    if data ~= nil then
+        self._log:debug('use provided data')
+
+    elseif self:_is_cache_stored() then
+        self._log:debug('cache flag is set as stored -> trying to load data from file')
+        data = self:_load_data_from_cache_file()
+
     else
-        self._data = self:_load_data_from_cache_file() or {}
+        self._log:debug('cache flag is not set -> no data')
     end
 
+    self._data = data or {}
     self._log:info('done'):leave_context()
 end
 
@@ -135,10 +140,11 @@ function DBReaderSessionCache:_dump_data_to_cache_file(data)
     if not file then return false end
     self._log:debug('cache file opened')
 
-    file:write(self._cache_header .. '\n')
     file:write(dumped_data)
     file:flush()
     file:close()
+
+    self:_set_cache_stored_state(true)
 
     self._log:debug('data stored in cache file:', self._cache_file_path)
 end
@@ -149,14 +155,6 @@ end
 function DBReaderSessionCache:_load_data_from_cache_file()
     local file = self:_open_cache_file('r')
     if not file then return end
-    
-    local stored_cache_header = file:read("*l")
-    self._log:debug('stored cache header is:', stored_cache_header, '; actual:', self._cache_header)
-    
-    if stored_cache_header ~= self._cache_header then
-        self._log:info('found old cache -> return nothing')
-        return
-    end
 
     local dumped_data = file:read("*a")
 
@@ -205,6 +203,20 @@ function DBReaderSessionCache:_open_cache_file(mod)
     end
 
     return file
+end
+
+
+---@return boolean is_stored
+function DBReaderSessionCache:_is_cache_stored()
+    return core:svr_load_bool(_CACHE_STORED_FLAG)
+end
+
+
+---@param is_stored boolean 
+---@return nil
+function DBReaderSessionCache:_set_cache_stored_state(is_stored)
+    core:svr_save_bool(_CACHE_STORED_FLAG, is_stored)
+    self._log:debug('cache flag set to:', is_stored)
 end
 
 
