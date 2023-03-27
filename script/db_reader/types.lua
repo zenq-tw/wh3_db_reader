@@ -89,3 +89,55 @@ return {
     ptr=to_pointer,
 }
 
+
+
+--[[
+==================================================================================================================================
+                                Type definition for retrieved tables (can be used in client code)
+==================================================================================================================================
+--]]
+
+
+--------------------------------------------- action_results_additional_outcomes --------------------------------------------------
+
+---@alias Record__action_results_additional_outcomes {key: string, action_result_key: string, outcome: string, value: number, effect_record: string | nil, effect_scope_record: string | nil}
+
+---@class DBTable__action_results_additional_outcomes: DBTable
+---@field records table <string, Record__action_results_additional_outcomes>
+---@field indexes {outcome: TIndex<string>, action_result_key: TIndex<string>}
+
+
+------------------------------------------------------ agent_actions --------------------------------------------------------------
+
+---@alias Record__agent_actions {unique_id: string, ability: string, agent: string, critical_failure: string, failure: string, opportune_failure: string, success: string, critical_success: string, cannot_fail: string, critical_failure_proportion_modifier: number, opportune_failure_proportion_modifier: number, critical_success_proportion_modifier: number, chance_of_success: integer, icon_path: string}
+
+---@class DBTable__agent_actions: DBTable
+---@field records table <string, Record__agent_actions>
+---@field indexes nil
+
+
+------------------------------------------------- armed_citizenry_unit_groups -----------------------------------------------------
+
+---@alias Record__armed_citizenry_unit_groups {unit_group: string}
+
+---@class DBTable__armed_citizenry_unit_groups: DBTable
+---@field records table <string, Record__armed_citizenry_unit_groups>
+---@field indexes nil
+
+
+----------------------------------------- armed_citizenry_units_to_unit_groups_junctions -------------------------------------------
+
+---@alias Record__armed_citizenry_units_to_unit_groups_junctions {id: string, priority: integer, unit: string, unit_group: string}
+
+---@class DBTable__armed_citizenry_units_to_unit_groups_junctions: DBTable
+---@field records table <string, Record__armed_citizenry_units_to_unit_groups_junctions>
+---@field indexes {unit: TIndex<string>, unit_group: TIndex<string>}
+
+
+-------------------------------------------- building_level_armed_citizenry_junctions ----------------------------------------------
+
+---@alias Record__building_level_armed_citizenry_junctions {id: string, building_level: string, unit_group: string}
+
+---@class DBTable__building_level_armed_citizenry_junctions: DBTable
+---@field records table <string, Record__building_level_armed_citizenry_junctions>
+---@field indexes {building_level: TIndex<string>, unit_group: TIndex<string>}

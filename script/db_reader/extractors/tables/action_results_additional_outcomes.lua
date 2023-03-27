@@ -6,12 +6,6 @@ local collections = assert(core:load_global_script('script.db_reader.collections
 local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@module "script.db_reader.utils"
 
 
----@alias Record__action_results_additional_outcomes {key: string, action_result_key: string, outcome: string, value: number, effect_record: string | nil, effect_scope_record: string | nil}
-
----@class DBTable__action_results_additional_outcomes: DBTable
----@field records table <string, Record__action_results_additional_outcomes>
----@field indexes {outcome: TIndex<string>, action_result_key: TIndex<string>}
-
 
 ---@enum OutcomesEnum
 local KNOWN_OUTCOMES_ENUM = {

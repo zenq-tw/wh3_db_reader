@@ -7,13 +7,6 @@ local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@mod
 
 
 
----@alias Record__building_level_armed_citizenry_junctions {id: string, building_level: string, unit_group: string}
-
----@class DBTable__building_level_armed_citizenry_junctions: DBTable
----@field records table <string, Record__building_level_armed_citizenry_junctions>
----@field indexes {building_level: TIndex<string>, unit_group: TIndex<string>}
-
-
 ---@type ExtractorInfo
 return {
     table_name='building_level_armed_citizenry_junctions',

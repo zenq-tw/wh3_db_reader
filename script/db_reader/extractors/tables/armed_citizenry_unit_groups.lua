@@ -5,12 +5,6 @@ local func = assert(core:load_global_script('script.db_reader.functools'))  ---@
 local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@module "script.db_reader.utils"
 
 
----@alias Record__armed_citizenry_unit_groups {unit_group: string}
-
----@class DBTable__armed_citizenry_unit_groups: DBTable
----@field records table <string, Record__armed_citizenry_unit_groups>
----@field indexes nil
-
 
 ---@type ExtractorInfo
 return {
