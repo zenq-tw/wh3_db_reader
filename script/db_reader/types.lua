@@ -6,6 +6,7 @@
 ---@alias Key string|number
 ---@alias Field Key|boolean
 
+---@alias TIndex<T> {[T]: nil | {count: integer, array: T[]}}
 
 ---@alias RawTableIndexes {[Column]: table <Field, Key[]>}
 ---@alias RawTableData {rows: Field[][], indexes: RawTableIndexes | nil}

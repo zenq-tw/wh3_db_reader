@@ -6,13 +6,12 @@ local collections = assert(core:load_global_script('script.db_reader.collections
 local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@module "script.db_reader.utils"
 
 
----@alias TIndex__armed_citizenry_units_to_unit_groups_junctions {[string]: nil | {count: integer, array: string[]}}
+
 ---@alias Record__armed_citizenry_units_to_unit_groups_junctions {id: string, priority: integer, unit: string, unit_group: string}
----@alias Indexes__armed_citizenry_units_to_unit_groups_junctions {unit: TIndex__armed_citizenry_units_to_unit_groups_junctions, unit_group: TIndex__armed_citizenry_units_to_unit_groups_junctions}
 
 ---@class DBTable__armed_citizenry_units_to_unit_groups_junctions: DBTable
 ---@field records table <string, Record__armed_citizenry_units_to_unit_groups_junctions>
----@field indexes Indexes__armed_citizenry_units_to_unit_groups_junctions
+---@field indexes {unit: TIndex<string>, unit_group: TIndex<string>}
 
 
 ---@type ExtractorInfo
@@ -40,7 +39,7 @@ return {
         local unit_key, group_key, priority
         local rows = {}
 
-        local indexes = {}  ---@type Indexes__armed_citizenry_units_to_unit_groups_junctions
+        local indexes = {}  ---@type {unit: TIndex<string>, unit_group: TIndex<string>}
         local unit_index = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Key[]>
         local group_index = collections.defaultdict(collections.factories.table)  ---@type defaultdict<string, Key[]>
 

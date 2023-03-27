@@ -6,13 +6,12 @@ local collections = assert(core:load_global_script('script.db_reader.collections
 local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@module "script.db_reader.utils"
 
 
----@alias TIndex__building_level_armed_citizenry_junctions {[string]: nil | {count: integer, array: string[]}}
+
 ---@alias Record__building_level_armed_citizenry_junctions {id: string, building_level: string, unit_group: string}
----@alias Indexes__building_level_armed_citizenry_junctions {building_level: TIndex__building_level_armed_citizenry_junctions, unit_group: TIndex__building_level_armed_citizenry_junctions}
 
 ---@class DBTable__building_level_armed_citizenry_junctions: DBTable
 ---@field records table <string, Record__building_level_armed_citizenry_junctions>
----@field indexes Indexes__building_level_armed_citizenry_junctions
+---@field indexes {building_level: TIndex<string>, unit_group: TIndex<string>}
 
 
 ---@type ExtractorInfo
@@ -39,7 +38,7 @@ return {
     
         local rows = {}
 
-        local indexes = {}  ---@type Indexes__building_level_armed_citizenry_junctions
+        local indexes = {}  ---@type {building_level: TIndex<string>, unit_group: TIndex<string>}
         local building_level_index = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Key[]>
         local unit_group_index = collections.defaultdict(collections.factories.table)  ---@type defaultdict<string, Key[]>
     

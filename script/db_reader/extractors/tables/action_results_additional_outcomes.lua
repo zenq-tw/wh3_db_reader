@@ -6,14 +6,11 @@ local collections = assert(core:load_global_script('script.db_reader.collections
 local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@module "script.db_reader.utils"
 
 
----@alias TIndex__action_results_additional_outcomes {[string]: nil | {count: integer, array: string[]}}
 ---@alias Record__action_results_additional_outcomes {key: string, action_result_key: string, outcome: string, value: number, effect_record: string | nil, effect_scope_record: string | nil}
----@alias Indexes__action_results_additional_outcomes {outcome: TIndex__action_results_additional_outcomes, action_result_key: TIndex__action_results_additional_outcomes}
-
 
 ---@class DBTable__action_results_additional_outcomes: DBTable
 ---@field records table <string, Record__action_results_additional_outcomes>
----@field indexes Indexes__action_results_additional_outcomes
+---@field indexes {outcome: TIndex<string>, action_result_key: TIndex<string>}
 
 
 ---@enum OutcomesEnum
@@ -80,7 +77,7 @@ return {
 
         local array_elem_data_ptr, sub_structure_ptr, one_exist_but_not_another
 
-        local indexes = {}  ---@type Indexes__action_results_additional_outcomes
+        local indexes = {}  ---@type {outcome: TIndex<string>, action_result_key: TIndex<string>}
         local outcome_index = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Key[]>
         local action_result_key_index = collections.defaultdict(collections.factories.table)  ---@type defaultdict<string, Key[]>
 
