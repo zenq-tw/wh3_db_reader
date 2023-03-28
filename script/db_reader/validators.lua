@@ -101,7 +101,7 @@ function validators.check_builder_results(table_meta, results, logger)
     end
 
     if not is_table(results) then
-        logger:error('invalid result type:', type(results)):info('expected structure:  {columns: string[], rows: any[], key_column_id: number}' )
+        logger:error('invalid result type:', type(results)):info('expected structure:  {columns: string[], key_column_id: number, rows: (string | number | boolean)[][]}' )
         return false    
     end
 
