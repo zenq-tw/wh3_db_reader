@@ -232,10 +232,12 @@ DBTable := {
 }
 ```
 #### `Id`
+Internal record identificator (position in records array)
 ```
 Id := integer
 ```
 #### `PrimaryKey`
+Value of a table record field that uniquely identifies it in a database table.
 ```
 PrimaryKey := string | number
 ```
