@@ -67,13 +67,13 @@ return {
 
 
         local next_array_element_shift = T.uint32(0x08)
-        local rows = {}
+        local rows, id = {}, 0
 
         local array_elem_data_ptr, sub_structure_ptr, one_exist_but_not_another
 
-        local indexes = {}  ---@type {outcome: TIndex<string>, action_result_key: TIndex<string>}
-        local outcome_index = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Key[]>
-        local action_result_key_index = collections.defaultdict(collections.factories.table)  ---@type defaultdict<string, Key[]>
+        local indexes = {}  ---@type {outcome: TRawIndex<string>, action_result_key: TRawIndex<string>}
+        local outcome_index = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Id[]>
+        local action_result_key_index = collections.defaultdict(collections.factories.table)  ---@type defaultdict<string, Id[]>
 
         indexes.outcome = outcome_index
         indexes.action_result_key = action_result_key_index
@@ -145,10 +145,12 @@ return {
 
             --================================== End Parsing ==================================--
 
-                table.insert(outcome_index[outcome_enum_member], key)
-                table.insert(action_result_key_index[action_result_key], key)
+                id = id + 1
 
-                table.insert(rows, {
+                table.insert(outcome_index[outcome_enum_member], id)
+                table.insert(action_result_key_index[action_result_key], id)
+
+                rows[id] = {
                     key,
                     action_result_key,
                     outcome_enum_member,
@@ -159,7 +161,7 @@ return {
                     -- opportune_failure_weighting,
                     -- affects_target,
                     -- advancement_stage,
-                })
+                }
 
             end
 

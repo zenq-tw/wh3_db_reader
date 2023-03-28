@@ -30,23 +30,23 @@ return {
         logger:debug('list tail (addr):', func.lazy(mr.tostring, node_ptr), 'array (addr):', func.lazy(mr.tostring, array_ptr))
     
         local unit_key, group_key, priority
-        local rows = {}
+        local rows, id = {}, 0
 
-        local indexes = {}  ---@type {unit: TIndex<string>, unit_group: TIndex<string>}
-        local unit_index = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Key[]>
-        local group_index = collections.defaultdict(collections.factories.table)  ---@type defaultdict<string, Key[]>
+        local indexes = {}  ---@type {unit: TRawIndex<string>, unit_group: TRawIndex<string>}
+        local unit_index = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Id[]>
+        local group_index = collections.defaultdict(collections.factories.table)  ---@type defaultdict<string, Id[]>
 
         indexes.unit = unit_index
         indexes.unit_group = group_index
     
         logger:add_indent()
-        local record_pos, id, record_ptr, unit_ptr, group_ptr
+        local record_pos, id__field, record_ptr, unit_ptr, group_ptr
 
         while not mr.eq(node_ptr, utils.null_address) do
             logger:debug('node ptr:', func.lazy(mr.tostring, node_ptr))
 
-            id = utils.read_string_CA(node_ptr, 0x10)
-            logger:debug('id:', id)
+            id__field = utils.read_string_CA(node_ptr, 0x10)
+            logger:debug('id:', id__field)
             
             record_pos = mr.read_uint32(node_ptr, T.uint32(0x20))
             logger:debug('record_pos:', record_pos)
@@ -66,11 +66,19 @@ return {
             group_key = utils.read_string_CA(group_ptr, 0x08)
             logger:debug('group_key:', group_key)
 
+            id = id + 1
+
             table.insert(unit_index[unit_key], id)
             table.insert(group_index[group_key], id)
-            
-            table.insert(rows, {id, priority, unit_key, group_key})
-            logger:debug('id:', id, 'priority:', priority, 'unit:', unit_key, 'unit_group:', group_key)
+
+            rows[id] = {
+                id__field,
+                priority,
+                unit_key,
+                group_key,
+            }
+
+            logger:debug('id:', id__field, 'priority:', priority, 'unit:', unit_key, 'unit_group:', group_key)
 
             node_ptr = mr.read_pointer(node_ptr)  -- getting node->prev pointer
         end

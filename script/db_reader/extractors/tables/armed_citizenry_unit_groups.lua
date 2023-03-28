@@ -32,16 +32,16 @@ return {
         local next_array_element_shift = T.uint32(0x08)
 
         logger:add_indent()
-        for i=1, rows_count do
-            logger:debug('address of', i, 'array elem (== ptr to record struct):', func.lazy(mr.tostring, ptr))
+        for id=1, rows_count do
+            logger:debug('address of', id, 'array elem (== ptr to record struct):', func.lazy(mr.tostring, ptr))
 
             array_elem_data_ptr = mr.read_pointer(ptr)
-            logger:debug('address of', i, 'record struct:', func.lazy(mr.tostring, array_elem_data_ptr))
+            logger:debug('address of', id, 'record struct:', func.lazy(mr.tostring, array_elem_data_ptr))
 
             value = utils.read_string_CA(array_elem_data_ptr, 0x08)
-            logger:debug(i, 'value:', value)
+            logger:debug(id, 'value:', value)
 
-            table.insert(rows, {value})
+            rows[id] = {value}
 
             ptr = mr.add(ptr, next_array_element_shift)  -- next array element address
         end

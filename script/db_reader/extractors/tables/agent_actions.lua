@@ -62,103 +62,103 @@ return {
         local icon_path
 
         logger:add_indent()
-        for i=1, rows_count do
-            logger:debug('address of', i, 'array elem (== ptr to record struct):', func.lazy(mr.tostring, ptr))
+        for id=1, rows_count do
+            logger:debug('address of', id, 'array elem (== ptr to record struct):', func.lazy(mr.tostring, ptr))
 
             array_elem_data_ptr = mr.read_pointer(ptr)
-            logger:debug('address of', i, 'record struct:', func.lazy(mr.tostring, array_elem_data_ptr))
+            logger:debug('address of', id, 'record struct:', func.lazy(mr.tostring, array_elem_data_ptr))
 
 
              ------------------------------------ Fields Parsing ------------------------------------
 
 
             unique_id = utils.read_string_CA(array_elem_data_ptr, 0x08)
-            logger:debug(i, 'unique_id:', unique_id)
+            logger:debug(id, 'unique_id:', unique_id)
 
 
             ------------------------------------ Ability & Agent ------------------------------------
 
 
             sub_structure_ptr = mr.read_pointer(array_elem_data_ptr, 0x18)
-            logger:debug('address of', i, 'record Ability sub-struct:', func.lazy(mr.tostring, sub_structure_ptr))
+            logger:debug('address of', id, 'record Ability sub-struct:', func.lazy(mr.tostring, sub_structure_ptr))
             ability = utils.read_string_CA(sub_structure_ptr, 0x08)
-            logger:debug(i, 'ability:', ability)
+            logger:debug(id, 'ability:', ability)
 
 
 
             sub_structure_ptr = mr.read_pointer(array_elem_data_ptr, 0x20)
-            logger:debug('address of', i, 'record Agent sub-struct:', func.lazy(mr.tostring, sub_structure_ptr))
+            logger:debug('address of', id, 'record Agent sub-struct:', func.lazy(mr.tostring, sub_structure_ptr))
             agent = utils.read_string_CA(sub_structure_ptr, 0x08, true)
-            logger:debug(i, 'agent:', agent)
+            logger:debug(id, 'agent:', agent)
 
 
             ------------------------------------ Action Results ------------------------------------
 
 
             sub_structure_ptr = mr.read_pointer(array_elem_data_ptr, 0x40)
-            logger:debug('address of', i, 'record ActionResult sub-struct (critical_failure):', func.lazy(mr.tostring, sub_structure_ptr))
+            logger:debug('address of', id, 'record ActionResult sub-struct (critical_failure):', func.lazy(mr.tostring, sub_structure_ptr))
             critical_failure = utils.read_string_CA(sub_structure_ptr, 0x08)
-            logger:debug(i, 'critical_failure:', critical_failure)
+            logger:debug(id, 'critical_failure:', critical_failure)
 
 
             sub_structure_ptr = mr.read_pointer(array_elem_data_ptr, 0x48)
-            logger:debug('address of', i, 'record ActionResult sub-struct (failure):', func.lazy(mr.tostring, sub_structure_ptr))
+            logger:debug('address of', id, 'record ActionResult sub-struct (failure):', func.lazy(mr.tostring, sub_structure_ptr))
             failure = utils.read_string_CA(sub_structure_ptr, 0x08)
-            logger:debug(i, 'failure:', failure)
+            logger:debug(id, 'failure:', failure)
 
 
             sub_structure_ptr = mr.read_pointer(array_elem_data_ptr, 0x50)
-            logger:debug('address of', i, 'record ActionResult sub-struct (opportune_failure):', func.lazy(mr.tostring, sub_structure_ptr))
+            logger:debug('address of', id, 'record ActionResult sub-struct (opportune_failure):', func.lazy(mr.tostring, sub_structure_ptr))
             opportune_failure = utils.read_string_CA(sub_structure_ptr, 0x08)
-            logger:debug(i, 'opportune_failure:', opportune_failure)
+            logger:debug(id, 'opportune_failure:', opportune_failure)
 
 
             sub_structure_ptr = mr.read_pointer(array_elem_data_ptr, 0x58)
-            logger:debug('address of', i, 'record ActionResult sub-struct (success):', func.lazy(mr.tostring, sub_structure_ptr))
+            logger:debug('address of', id, 'record ActionResult sub-struct (success):', func.lazy(mr.tostring, sub_structure_ptr))
             success = utils.read_string_CA(sub_structure_ptr, 0x08)
-            logger:debug(i, 'success:', success)
+            logger:debug(id, 'success:', success)
 
 
             sub_structure_ptr = mr.read_pointer(array_elem_data_ptr, 0x60)
-            logger:debug('address of', i, 'record ActionResult sub-struct (critical_success):', func.lazy(mr.tostring, sub_structure_ptr))
+            logger:debug('address of', id, 'record ActionResult sub-struct (critical_success):', func.lazy(mr.tostring, sub_structure_ptr))
             critical_success = utils.read_string_CA(sub_structure_ptr, 0x08)
-            logger:debug(i, 'critical_success:', critical_success)
+            logger:debug(id, 'critical_success:', critical_success)
 
 
             sub_structure_ptr = mr.read_pointer(array_elem_data_ptr, 0x68)
-            logger:debug('address of', i, 'record ActionResult sub-struct (cannot_fail):', func.lazy(mr.tostring, sub_structure_ptr))
+            logger:debug('address of', id, 'record ActionResult sub-struct (cannot_fail):', func.lazy(mr.tostring, sub_structure_ptr))
             cannot_fail = utils.read_string_CA(sub_structure_ptr, 0x08)
-            logger:debug(i, 'cannot_fail:', cannot_fail)
+            logger:debug(id, 'cannot_fail:', cannot_fail)
 
 
             ------------------------------------ Proportion Modifiers ------------------------------------
 
 
             critical_success_modifier = mr.read_float(array_elem_data_ptr, 0xA0)
-            logger:debug(i, 'critical_success_proportion_modifier:', critical_success_modifier)
+            logger:debug(id, 'critical_success_proportion_modifier:', critical_success_modifier)
 
             opportune_failure_modifier = mr.read_float(array_elem_data_ptr, 0xA4)
-            logger:debug(i, 'opportune_failure_proportion_modifier:', opportune_failure_modifier)
+            logger:debug(id, 'opportune_failure_proportion_modifier:', opportune_failure_modifier)
 
             critical_failure_modifier = mr.read_float(array_elem_data_ptr, 0xA8)
-            logger:debug(i, 'critical_failure_proportion_modifier:', critical_failure_modifier)
+            logger:debug(id, 'critical_failure_proportion_modifier:', critical_failure_modifier)
 
 
             ------------------------------------ Other stuff ------------------------------------
 
 
             chance_of_success = mr.read_uint32(array_elem_data_ptr, 0xAC)
-            logger:debug(i, 'chance_of_success:', chance_of_success)
+            logger:debug(id, 'chance_of_success:', chance_of_success)
 
 
             icon_path = utils.read_string_CA(array_elem_data_ptr, 0xB8)
-            logger:debug(i, 'icon_path:', icon_path)
+            logger:debug(id, 'icon_path:', icon_path)
 
 
             ------------------------------------ End Parsing ------------------------------------
 
 
-            table.insert(rows, {
+            rows[id] = {
                 unique_id,
                 ability,
                 agent,
@@ -182,7 +182,7 @@ return {
                 -- subculture,
                 -- succeed_always_override,
                 -- order,
-            })
+            }
 
             ptr = mr.add(ptr, next_array_element_shift)  -- next array element address
         end

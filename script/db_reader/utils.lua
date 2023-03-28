@@ -136,9 +136,9 @@ function utils.check_is_db_constructed(db_address)
 end
 
 
----@param index {[string]: Key[]}
+---@param index {[string]: Id[]}
 ---@param value string
----@param table_key Key
+---@param table_key Id
 ---@return nil
 function utils.include_key_in_index(index, value, table_key)
     if index[value] == nil then
@@ -154,27 +154,28 @@ end
 ---@param key_column string
 ---@param rows_count? integer
 ---@param columns_count? integer
----@return table<Key, Record>
+---@return {[Id]: Record} records, {[PrimaryKey]: Id} pk
 function utils.make_table_data(rows, columns, key_column, rows_count, columns_count)
     rows_count = rows_count or #rows
     columns_count = columns_count or #columns
 
-    ---@type table<string, Record>
-    local records = {}
+    local records = {}  ---@type table<Id, Record>
+    local pk = {}  ---@type {[PrimaryKey]: Id}
 
     local row, record
-    for i=1, rows_count do
-        row = rows[i]
+    for id=1, rows_count do
+        row = rows[id]
         record = {}
 
         for j=1, columns_count do
             record[columns[j]] = row[j]
         end
 
-        records[record[key_column]] = record
+        records[id] = record
+        pk[record[key_column]] = id
     end
 
-    return records
+    return records, pk
 end
 
 

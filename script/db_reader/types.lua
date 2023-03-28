@@ -2,13 +2,15 @@
 
 
 
+---@alias Id integer
 ---@alias Column string
----@alias Key string|number
----@alias Field Key|boolean
+---@alias PrimaryKey string|number
+---@alias Field PrimaryKey|boolean
 
----@alias TIndex<T> {[T]: nil | {count: integer, array: T[]}}
+---@alias TRawIndex<T> {[T]: Id[]}
+---@alias TIndex<T> {[T]: nil | {count: integer, array: Id[]}}
 
----@alias RawTableIndexes {[Column]: table <Field, Key[]>}
+---@alias RawTableIndexes {[Column]: TRawIndex<Field>}
 ---@alias RawTableData {rows: Field[][], indexes: RawTableIndexes | nil}
 ---@alias TableDataExtractor fun(ptr: pointer, logger: LoggerCls): RawTableData | nil
 
@@ -21,12 +23,13 @@
 
 ---@alias Record {[Column]: Field}
 
----@alias TableKeys { count: integer, array: Key[] }
----@alias TableIndexes { [Column]: { [Field]: TableKeys } }
+---@alias RecordIds { count: integer, array: Id[] }
+---@alias TableIndexes { [Column]: { [Field]: RecordIds } }
 
 ---@class DBTable
 ---@field count integer
----@field records table <Key, Record>
+---@field pk {[PrimaryKey]: Id}
+---@field records table <Id, Record>
 ---@field indexes TableIndexes | nil
 
 
@@ -103,6 +106,7 @@ return {
 ---@alias Record__action_results_additional_outcomes {key: string, action_result_key: string, outcome: string, value: number, effect_record: string | nil, effect_scope_record: string | nil}
 
 ---@class DBTable__action_results_additional_outcomes: DBTable
+---@field pk {[string]: Id}  -- key
 ---@field records table <string, Record__action_results_additional_outcomes>
 ---@field indexes {outcome: TIndex<string>, action_result_key: TIndex<string>}
 
@@ -112,6 +116,7 @@ return {
 ---@alias Record__agent_actions {unique_id: string, ability: string, agent: string, critical_failure: string, failure: string, opportune_failure: string, success: string, critical_success: string, cannot_fail: string, critical_failure_proportion_modifier: number, opportune_failure_proportion_modifier: number, critical_success_proportion_modifier: number, chance_of_success: integer, icon_path: string}
 
 ---@class DBTable__agent_actions: DBTable
+---@field pk {[string]: Id}  -- unique_id
 ---@field records table <string, Record__agent_actions>
 ---@field indexes nil
 
@@ -121,6 +126,7 @@ return {
 ---@alias Record__armed_citizenry_unit_groups {unit_group: string}
 
 ---@class DBTable__armed_citizenry_unit_groups: DBTable
+---@field pk {[string]: Id}  -- unit_group
 ---@field records table <string, Record__armed_citizenry_unit_groups>
 ---@field indexes nil
 
@@ -130,6 +136,7 @@ return {
 ---@alias Record__armed_citizenry_units_to_unit_groups_junctions {id: string, priority: integer, unit: string, unit_group: string}
 
 ---@class DBTable__armed_citizenry_units_to_unit_groups_junctions: DBTable
+---@field pk {[string]: Id}  -- id
 ---@field records table <string, Record__armed_citizenry_units_to_unit_groups_junctions>
 ---@field indexes {unit: TIndex<string>, unit_group: TIndex<string>}
 
@@ -139,5 +146,6 @@ return {
 ---@alias Record__building_level_armed_citizenry_junctions {id: string, building_level: string, unit_group: string}
 
 ---@class DBTable__building_level_armed_citizenry_junctions: DBTable
+---@field pk {[string]: Id}  -- id
 ---@field records table <string, Record__building_level_armed_citizenry_junctions>
 ---@field indexes {building_level: TIndex<string>, unit_group: TIndex<string>}

@@ -29,11 +29,11 @@ return {
         local node_ptr = mr.read_pointer(ptr, T.uint32(0x30))  -- address of records linked list tail 
         logger:debug('list tail (addr):', func.lazy(mr.tostring, node_ptr), 'array (addr):', func.lazy(mr.tostring, array_ptr))
     
-        local rows = {}
+        local rows, id = {}, 0
 
-        local indexes = {}  ---@type {building_level: TIndex<string>, unit_group: TIndex<string>}
-        local building_level_index = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Key[]>
-        local unit_group_index = collections.defaultdict(collections.factories.table)  ---@type defaultdict<string, Key[]>
+        local indexes = {}  ---@type {building_level: TRawIndex<string>, unit_group: TRawIndex<string>}
+        local building_level_index = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Id[]>
+        local unit_group_index = collections.defaultdict(collections.factories.table)  ---@type defaultdict<string, Id[]>
     
         indexes.building_level = building_level_index
         indexes.unit_group = unit_group_index
@@ -41,15 +41,15 @@ return {
         logger:add_indent()
 
         local record_pos, record_ptr
-        local id
+        local id__field
         local building_lvl_ptr, building_lvl
         local group_ptr, group_key
 
         while not mr.eq(node_ptr, utils.null_address) do
             logger:debug('node ptr:', func.lazy(mr.tostring, node_ptr))
 
-            id = utils.read_string_CA(node_ptr, 0x10)
-            logger:debug('id:', id)
+            id__field = utils.read_string_CA(node_ptr, 0x10)
+            logger:debug('id:', id__field)
             
             record_pos = mr.read_uint32(node_ptr, T.uint32(0x20))
             logger:debug('record_pos:', record_pos)
@@ -66,11 +66,18 @@ return {
             group_key = utils.read_string_CA(group_ptr, 0x08)
             logger:debug('group_key:', group_key)
 
+            id = id + 1
+
             table.insert(building_level_index[building_lvl], id)
             table.insert(unit_group_index[group_key], id)
 
-            table.insert(rows, {id, building_lvl, group_key})
-            logger:debug('id:', id, 'building_lvl:', building_lvl, 'unit_group:', group_key)
+            rows[id] = {
+                id__field,
+                building_lvl,
+                group_key,
+            }
+
+            logger:debug('id:', id__field, 'building_lvl:', building_lvl, 'unit_group:', group_key)
 
             node_ptr = mr.read_pointer(node_ptr)  -- getting node->prev pointer
         end

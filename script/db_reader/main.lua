@@ -287,9 +287,9 @@ end
 function DBReader:_build_table(table_meta, table_data, rows_count)
     self._log:enter_context('build'):debug('building table data, count of records:', rows_count)
 
-    local records = utils.make_table_data(table_data.rows, table_meta.columns, table_meta.key_column, rows_count)
+    local records, pk = utils.make_table_data(table_data.rows, table_meta.columns, table_meta.key_column, rows_count)
 
-    local prepared_indexes = nil
+    local is_valid, prepared_indexes
     if table_data.indexes ~= nil then
         is_valid, prepared_indexes = self:_check_indexes_integrity(records, table_data.indexes)
         if not is_valid then
@@ -300,6 +300,7 @@ function DBReader:_build_table(table_meta, table_data, rows_count)
 
     local db_table = {  ---@type DBTable
         count=rows_count,
+        pk=pk,
         records=records,
         indexes=prepared_indexes,
     }
@@ -308,35 +309,36 @@ function DBReader:_build_table(table_meta, table_data, rows_count)
     return db_table
 end
 
----@param records table <Key, Record>
+---@param records table <Id, Record>
 ---@param indexes RawTableIndexes
 ---@return boolean is_valid, TableIndexes? prepared_indexes
 function DBReader:_check_indexes_integrity(records, indexes)
-    local prepared_indexes = collections.defaultdict(collections.factories.table)  ---@type defaultdict<Column, {[Field]: TableKeys}>
-    local keys
+    local prepared_indexes = collections.defaultdict(collections.factories.table)  ---@type defaultdict<Column, {[Field]: RecordIds}>
+    local ids
     local counter
 
     for column, index in pairs(indexes) do
-        for value, table_keys in pairs(index) do
-            keys, counter = {}, 0
+        for value, record_ids in pairs(index) do
+            ids, counter = {}, 0
 
-            for i, key in pairs(table_keys) do
+            for i, id in pairs(record_ids) do
                 if not is_number(i) then
-                    self._log:error('invalid index for column', column, 'with value', value, '- table keys must be an array')    
+                    self._log:error('invalid index for column', column, 'with value', value, '- <table keys> must be an array')    
+                    return false
                 end
 
-                if records[key] == nil then
-                    self._log:error('invalid index for column', column, 'with value', value, '- record with such key not found:', key)
+                if records[id] == nil then
+                    self._log:error('invalid index for column', column, 'with value', value, '- record with such key not found:', id)
                     return false 
                 end
 
                 counter = i
-                keys[i] = key
+                ids[i] = id
             end
             
             prepared_indexes[column][value] = {
                 count=counter,
-                array=keys,
+                array=ids,
             }
         end
     end

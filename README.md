@@ -226,13 +226,18 @@ Specific table data extractor registration method
 ```
 DBTable := {
     'count': integer
-    'records': { [Key]: Record }
+    'pk': { [PrimaryKey]: Id}
+    'records': { [Id]: Record }
     'indexes': TableIndexes | nil
 }
 ```
-#### `Key`
+#### `Id`
 ```
-Key := string | number
+Id := integer
+```
+#### `PrimaryKey`
+```
+PrimaryKey := string | number
 ```
 #### `Record`
 ```
@@ -249,7 +254,7 @@ Field := string | number | boolean
 #### `TableIndexes`
 ```
 TableIndexes := {
-    [Column]: { [Field]: { 'count': integer, 'array': Key[] } }
+    [Column]: { [Field]: { 'count': integer, 'array': Id[] } }
 }
 ```
 #### `TableDataExtractor`
