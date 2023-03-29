@@ -1,3 +1,5 @@
+local collections = {}
+
 --==================================================================================================================================--
 --                                                          defaultdict
 --==================================================================================================================================--
@@ -7,7 +9,7 @@
 ---@alias TFactory<T> fun(key: any): T
 
 ---@type {table: TFactory<table>, string: TFactory<string>, number: TFactory<number>}
-local type_factories = {
+collections.type_factories = {
     table = (function (key) return {} end),
     string = (function (key) return '' end),
     number = (function (key) return 0 end),
@@ -19,10 +21,10 @@ local type_factories = {
 ---@generic K, V
 ---@param default_value_factory TFactory<V>
 ---@return defaultdict<K, V>
-local function defaultdict(default_value_factory)
+function collections.defaultdict(default_value_factory)
     if type(default_value_factory) ~= 'function' then
-        if type(default_value_factory) == 'string' and type_factories[default_value_factory] ~= nil then
-            default_value_factory = type_factories[default_value_factory]
+        if type(default_value_factory) == 'string' and collections.type_factories[default_value_factory] ~= nil then
+            default_value_factory = collections.type_factories[default_value_factory]
         else
             error('invalid default value factory')
         end
@@ -44,7 +46,4 @@ end
 
 
 
-return {
-    defaultdict=defaultdict,
-    factories=type_factories,
-}
+return collections
