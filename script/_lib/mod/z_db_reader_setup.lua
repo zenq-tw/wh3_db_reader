@@ -125,14 +125,14 @@ end
 
 
 local function _setup_db_reader()
-    db_reader = DBReader:new(db_address, registry, extractors, l.logger)
+    db_reader = DBReader:_new(db_address, registry, extractors, l.logger)
     l.info('db_reader: created')
 
     l.info('db_reader: trigger event ' .. created_event .. '...')
     core:trigger_custom_event(created_event, {get_db_reader=db_reader})
     l.info('db_reader: event ' .. created_event .. ' triggered')
 
-    db_reader:init(db_reader_data)
+    db_reader:_init(db_reader_data)
 
     l.info('db_reader: trigger event ' .. initialized_event .. '...')
     core:trigger_custom_event(initialized_event, {get_db_reader=db_reader})
@@ -140,7 +140,7 @@ local function _setup_db_reader()
 
     l.info('db_reader: caching internal data...')
     registry_data = registry:get_data_for_cache()
-    db_reader_data = db_reader:get_data_for_cache()
+    db_reader_data = db_reader:_get_data_for_cache()
 
     local is_cached = cache:set(registry_data, db_reader_data)
     if is_cached then

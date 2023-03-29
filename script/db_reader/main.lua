@@ -38,7 +38,7 @@ local DBReader = {
 ---@param logger LoggerCls
 ---@return Cls
 ---ONLY FOR INTERNAL USAGE
-function DBReader.new(cls, db_address, registry, extractors, logger)
+function DBReader._new(cls, db_address, registry, extractors, logger)
     logger:enter_context('db: new')
 
     cls.__index = cls
@@ -64,7 +64,7 @@ end
 ---@protected
 ---@param data? DBReaderData
 ---ONLY FOR INTERNAL USAGE
-function DBReader:init(data)
+function DBReader:_init(data)
     self._log:enter_context('db: init')
 
     if data ~= nil then
@@ -87,7 +87,7 @@ end
 ---@protected
 ---@return DBReaderData
 ---ONLY FOR INTERNAL USAGE
-function DBReader:get_data_for_cache()
+function DBReader:_get_data_for_cache()
     self._log:enter_context('db: get cache data'):debug('collecting...')
     
     local data = {
@@ -103,7 +103,7 @@ end
 
 ---@protected
 ---ONLY FOR INTERNAL USAGE
-function DBReader:reload()
+function DBReader:_reload()
     self._log:enter_context('db: reload'):debug('reloading...')
 
     self._loaded_tables = {}
