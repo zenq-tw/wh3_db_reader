@@ -20,25 +20,32 @@ local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@mod
 ---@field protected _initialized boolean
 ---@field protected __index DBRegistry
 local DBRegistry = {}
-DBRegistry.__index = DBRegistry
 
 
 ---@protected
 ---@nodiscard
+---@generic Cls: DBRegistry
+---@param cls Cls
 ---@param db_address pointer
 ---@param logger LoggerCls
----@return DBRegistry
+---@return Cls
 ---ONLY FOR INTERNAL USAGE
-function DBRegistry.new(db_address, logger)
-    local self = setmetatable({}, DBRegistry)
+function DBRegistry.new(cls, db_address, logger)
+    logger:enter_context('db registry: new')
 
-    self.count = 0
-    self.tables = {}
+    cls.__index = cls
+    local instance = setmetatable({}, cls)  --[[@as DBRegistry]]
 
-    self._db_address = db_address
-    self._log = logger
 
-    return self
+    instance.count = 0
+    instance.tables = {}
+    instance._db_address = db_address
+    instance._log = logger
+
+
+    logger:debug('created'):leave_context()
+
+    return instance
 end
 
 

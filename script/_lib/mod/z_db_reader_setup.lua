@@ -109,7 +109,7 @@ local cache = DBReaderSessionCache.new(l.logger)
 cache:init()
 
 local registry_data, db_reader_data = cache:get()
-local registry = DBRegistry.new(db_address, l.logger)
+local registry = DBRegistry:new(db_address, l.logger)
 
 
 local extractors  ---@type ExtractorsRegistry
@@ -125,7 +125,7 @@ end
 
 
 local function _setup_db_reader()
-    db_reader = DBReader.new(db_address, registry, extractors, l.logger)
+    db_reader = DBReader:new(db_address, registry, extractors, l.logger)
     l.info('db_reader: created')
 
     l.info('db_reader: trigger event ' .. created_event .. '...')

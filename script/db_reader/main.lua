@@ -26,33 +26,38 @@ assert(core:load_global_script('script.db_reader.extensions'))  ---@module "scri
 local DBReader = {
     version='0.0.1',
 }
-DBReader.__index = DBReader
 
 
 ---@protected
 ---@nodiscard
+---@generic Cls: DBReader
+---@param cls Cls
 ---@param db_address pointer
 ---@param registry DBRegistry
 ---@param extractors ExtractorsRegistry
 ---@param logger LoggerCls
----@return DBReader
+---@return Cls
 ---ONLY FOR INTERNAL USAGE
-function DBReader.new(db_address, registry, extractors, logger)
-    local self = setmetatable({}, DBReader)
-    self._log = logger
+function DBReader.new(cls, db_address, registry, extractors, logger)
+    logger:enter_context('db: new')
 
-    self._log:enter_context('db: new')
+    cls.__index = cls
+    local instance = setmetatable({}, cls)  --[[@as DBReader]]
 
-    self._db_address = db_address
-    self._registry = registry
-    self._extractors = extractors
 
-    self._loaded_tables = {}
-    self._requested_tables = {}
-    self._initialized = false
+    instance._log = logger
+    instance._db_address = db_address
+    instance._registry = registry
+    instance._extractors = extractors
 
-    self._log:debug('created'):leave_context()
-    return self
+    instance._loaded_tables = {}
+    instance._requested_tables = {}
+    instance._initialized = false
+
+
+    logger:debug('created'):leave_context()
+
+    return instance
 end
 
 
