@@ -48,7 +48,7 @@ I would appreciate any feedback and bug reports.
     > idk if anyone really needs battle mod support, but if someone needs it, then I can try to add (just haven't tested it yet). Also not sure if `memreader` supports it at all
 
 * Not all tables will be available:
-    * I plan to provide access only to that tables, that cant be accessed in any other way
+    * I plan to add only those tables whose data cannot be accessed in any other way.
     * adding a database table to DBReader sometimes requires a lot of time to reverse engineer the game, a bit of luck and experience. Therefore, all tables will never be available (there are probably too many). If you're missing something specific, let me know and if there is a technical possibility at all, I will try to provide access to it someday
     * it seems that we dont have access to `bonus_value_id_*` tables  _(at least for v2.4)_
         > table data headers exist, but there are no table records in them. So far, all my attempts to obtain this data in another way have not been successful
