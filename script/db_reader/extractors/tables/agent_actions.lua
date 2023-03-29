@@ -59,10 +59,14 @@ return {
         local next_array_element_shift = T.uint32(0x08)
         local rows = {}
 
-        local indexes = {}  ---@type {action_results_combined: TRawIndex<string>}
-        local action_results_combined = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Id[]>
+        local indexes = {}  ---@type {critical_failure: TRawIndex<string>, failure: TRawIndex<string>, opportune_failure: TRawIndex<string>, success: TRawIndex<string>, critical_success: TRawIndex<string>, cannot_fail: TRawIndex<string> }
 
-        indexes.action_results_combined = action_results_combined
+        indexes.critical_failure    = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Id[]>
+        indexes.failure             = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Id[]>
+        indexes.opportune_failure   = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Id[]>
+        indexes.success             = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Id[]>
+        indexes.critical_success    = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Id[]>
+        indexes.cannot_fail         = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Id[]>
 
         local array_elem_data_ptr, sub_structure_ptr
         local unique_id, ability, agent
@@ -88,10 +92,7 @@ return {
             action_result = utils.read_string_CA(sub_structure_ptr, 0x08)
             logger:debug(record_id, type, '=', action_result)
 
-            if action_already_in_index[action_result][record_id] then return action_result end
-
-            table.insert(action_results_combined[action_result], record_id)
-            action_already_in_index[action_result][record_id] = true
+            table.insert(indexes[type][action_result], record_id)
 
             return action_result
         end

@@ -121,7 +121,7 @@ return {
 
 ---@class DBTable__agent_actions: DBTable
 ---@field pk {[string]: Id}  -- unique_id
----@field indexes {action_results_combined: TIndex<string>}
+---@field indexes {critical_failure: TIndex<string>, failure: TIndex<string>, opportune_failure: TIndex<string>, success: TIndex<string>, critical_success: TIndex<string>, cannot_fail: TIndex<string>}
 ---@field [Id] Record__agent_actions
 
 
