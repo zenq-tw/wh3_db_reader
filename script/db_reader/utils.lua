@@ -1,6 +1,7 @@
 local mr = assert(_G.memreader)
 local T = assert(core:load_global_script('script.db_reader.types'))  ---@module "script.db_reader.types"
 local func = assert(core:load_global_script('script.db_reader.functools'))  ---@module "script.db_reader.functools"
+local collections = assert(core:load_global_script('script.db_reader.collections'))  ---@module "script.db_reader.collections"
 
 local utils = {}
 
@@ -160,7 +161,7 @@ function utils.make_table_data(rows, columns, key_column, rows_count, columns_co
     columns_count = columns_count or #columns
 
     local records = {}  ---@type table<Id, Record>
-    local pk = {}  ---@type {[PrimaryKey]: Id}
+    local pk = collections.NonRewritableDict('PrimaryKeyToId', true, false)  ---@type TNonRewritableDict<PrimaryKey, Id>
 
     local row, record
     for id=1, rows_count do
