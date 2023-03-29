@@ -109,7 +109,7 @@ local cache = DBReaderSessionCache.new(l.logger)
 cache:init()
 
 local registry_data, db_reader_data = cache:get()
-local registry = DBRegistry:new(db_address, l.logger)
+local registry = DBRegistry:_new(db_address, l.logger)
 
 
 local extractors  ---@type ExtractorsRegistry
@@ -117,7 +117,7 @@ local db_reader  ---@type DBReader
 
 
 local function _init_runtime_dependencies()
-    registry:init(registry_data)
+    registry:_init(registry_data)
 
     extractors = ExtractorsRegistry:new(registry, l.logger)
     extractors:init()
@@ -139,7 +139,7 @@ local function _setup_db_reader()
     l.info('db_reader: event ' .. initialized_event .. ' triggered')
 
     l.info('db_reader: caching internal data...')
-    registry_data = registry:get_data_for_cache()
+    registry_data = registry:_get_data_for_cache()
     db_reader_data = db_reader:_get_data_for_cache()
 
     local is_cached = cache:set(registry_data, db_reader_data)

@@ -30,7 +30,7 @@ local DBRegistry = {}
 ---@param logger LoggerCls
 ---@return Cls
 ---ONLY FOR INTERNAL USAGE
-function DBRegistry.new(cls, db_address, logger)
+function DBRegistry._new(cls, db_address, logger)
     logger:enter_context('db registry: new')
 
     cls.__index = cls
@@ -74,7 +74,7 @@ end
 ---@protected
 ---@param data? DBRegistryDumpedData
 ---ONLY FOR INTERNAL USAGE
-function DBRegistry:init(data)
+function DBRegistry:_init(data)
     self._log:enter_context('registry: init')
 
     if data then
@@ -105,7 +105,7 @@ end
 ---@protected
 ---@return DBRegistryDumpedData
 ---ONLY FOR INTERNAL USAGE
-function DBRegistry:get_data_for_cache()
+function DBRegistry:_get_data_for_cache()
     self._log:enter_context('registry'):debug('collecting cache data')
 
     local prepared_tables = {}
