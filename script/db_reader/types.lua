@@ -118,7 +118,7 @@ return {
 ---@class DBTable__agent_actions: DBTable
 ---@field pk {[string]: Id}  -- unique_id
 ---@field records table <Id, Record__agent_actions>
----@field indexes nil
+---@field indexes {action_results_combined: TIndex<string>}
 
 
 ------------------------------------------------- armed_citizenry_unit_groups -----------------------------------------------------

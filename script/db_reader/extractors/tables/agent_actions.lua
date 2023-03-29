@@ -2,6 +2,7 @@ local mr = assert(_G.memreader)
 
 local T = assert(core:load_global_script('script.db_reader.types'))  ---@module "script.db_reader.types"
 local func = assert(core:load_global_script('script.db_reader.functools'))  ---@module "script.db_reader.functools"
+local collections = assert(core:load_global_script('script.db_reader.collections'))  ---@module "script.db_reader.collections"
 local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@module "script.db_reader.utils"
 
 
@@ -52,14 +53,54 @@ return {
         logger:debug('array (fst elem addr):', func.lazy(mr.tostring, ptr))
 
 
+        ------------------------------------ Variables definition ------------------------------------
+
+
         local next_array_element_shift = T.uint32(0x08)
         local rows = {}
+
+        local indexes = {}  ---@type {action_results_combined: TRawIndex<string>}
+        local action_results_combined = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Id[]>
+
+        indexes.action_results_combined = action_results_combined
 
         local array_elem_data_ptr, sub_structure_ptr
         local unique_id, ability, agent
         local critical_failure, failure, opportune_failure, success, critical_success, cannot_fail
         local critical_failure_modifier, opportune_failure_modifier, critical_success_modifier, chance_of_success
         local icon_path
+
+
+        ------------------------------------ Action Results combined index stuff ------------------------------------
+
+
+        local action_already_in_index = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, {[Id]: true}>
+        local action_result
+
+        ---@param offset number
+        ---@param record_id integer
+        ---@param type string
+        ---@return string
+        local read_action_result = function(offset, record_id, type)
+            sub_structure_ptr = mr.read_pointer(array_elem_data_ptr, offset)
+            logger:debug('address of', record_id, 'record ActionResult sub-struct (', type , '):', func.lazy(mr.tostring, sub_structure_ptr))
+
+            action_result = utils.read_string_CA(sub_structure_ptr, 0x08)
+            logger:debug(record_id, type, '=', action_result)
+
+            if action_already_in_index[action_result][record_id] then return action_result end
+
+            table.insert(action_results_combined[action_result], record_id)
+            action_already_in_index[action_result][record_id] = true
+
+            return action_result
+        end
+
+
+        --========================================================================================--
+        --================================== Reading table data ==================================--
+        --========================================================================================--
+
 
         logger:add_indent()
         for id=1, rows_count do
@@ -95,40 +136,12 @@ return {
             ------------------------------------ Action Results ------------------------------------
 
 
-            sub_structure_ptr = mr.read_pointer(array_elem_data_ptr, 0x40)
-            logger:debug('address of', id, 'record ActionResult sub-struct (critical_failure):', func.lazy(mr.tostring, sub_structure_ptr))
-            critical_failure = utils.read_string_CA(sub_structure_ptr, 0x08)
-            logger:debug(id, 'critical_failure:', critical_failure)
-
-
-            sub_structure_ptr = mr.read_pointer(array_elem_data_ptr, 0x48)
-            logger:debug('address of', id, 'record ActionResult sub-struct (failure):', func.lazy(mr.tostring, sub_structure_ptr))
-            failure = utils.read_string_CA(sub_structure_ptr, 0x08)
-            logger:debug(id, 'failure:', failure)
-
-
-            sub_structure_ptr = mr.read_pointer(array_elem_data_ptr, 0x50)
-            logger:debug('address of', id, 'record ActionResult sub-struct (opportune_failure):', func.lazy(mr.tostring, sub_structure_ptr))
-            opportune_failure = utils.read_string_CA(sub_structure_ptr, 0x08)
-            logger:debug(id, 'opportune_failure:', opportune_failure)
-
-
-            sub_structure_ptr = mr.read_pointer(array_elem_data_ptr, 0x58)
-            logger:debug('address of', id, 'record ActionResult sub-struct (success):', func.lazy(mr.tostring, sub_structure_ptr))
-            success = utils.read_string_CA(sub_structure_ptr, 0x08)
-            logger:debug(id, 'success:', success)
-
-
-            sub_structure_ptr = mr.read_pointer(array_elem_data_ptr, 0x60)
-            logger:debug('address of', id, 'record ActionResult sub-struct (critical_success):', func.lazy(mr.tostring, sub_structure_ptr))
-            critical_success = utils.read_string_CA(sub_structure_ptr, 0x08)
-            logger:debug(id, 'critical_success:', critical_success)
-
-
-            sub_structure_ptr = mr.read_pointer(array_elem_data_ptr, 0x68)
-            logger:debug('address of', id, 'record ActionResult sub-struct (cannot_fail):', func.lazy(mr.tostring, sub_structure_ptr))
-            cannot_fail = utils.read_string_CA(sub_structure_ptr, 0x08)
-            logger:debug(id, 'cannot_fail:', cannot_fail)
+            critical_failure  = read_action_result(0x40, id, 'critical_failure')
+            failure           = read_action_result(0x48, id, 'failure')
+            opportune_failure = read_action_result(0x50, id, 'opportune_failure')
+            success           = read_action_result(0x58, id, 'success')
+            critical_success  = read_action_result(0x60, id, 'critical_success')
+            cannot_fail       = read_action_result(0x68, id, 'cannot_fail')
 
 
             ------------------------------------ Proportion Modifiers ------------------------------------
@@ -190,7 +203,7 @@ return {
 
         return {
             rows=rows,
-            indexes=nil,
+            indexes=indexes,
         }
     end
 }
