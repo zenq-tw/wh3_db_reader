@@ -13,9 +13,12 @@ local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@mod
 ---@field protected _cache_file_path string
 ---@field protected _log LoggerCls
 ---@field protected _data DBReaderSessionData
+---@field protected _cache_stored_flag_key string
 ---@field protected __index DBReaderSessionCache
-local DBReaderSessionCache = {}
-DBReaderSessionCache.__index = DBReaderSessionCache
+local DBReaderSessionCache = {
+    _cache_stored_flag_key = 'DB_READER_CACHE_STORED_FLAG',
+    _cache_file_path = 'data/.db_reader__cache.lua',
+}
 
 
 --@alias CTableKey string | number
@@ -27,22 +30,27 @@ DBReaderSessionCache.__index = DBReaderSessionCache
 ---@field db_reader DBReaderData
 
 
-local _CACHE_STORED_FLAG = 'DB_READER_CACHE_STORED_FLAG'
-
-
 ---@protected
 ---@nodiscard
+---@generic Cls: DBReaderSessionCache
+---@param cls Cls
 ---@param logger LoggerCls
----@return DBReaderSessionCache
+---@return Cls
 ---ONLY FOR INTERNAL USAGE
-function DBReaderSessionCache.new(logger)
-    local self = setmetatable({}, DBReaderSessionCache)
+function DBReaderSessionCache.new(cls, logger)
+    logger:enter_context('cache: new')
 
-    self._cache_file_path = 'data/.db_reader__cache.lua'
-    self._log = logger
-    self._data = {}
+    cls.__index = cls
+    local instance = setmetatable({}, cls)  --[[@as DBReaderSessionCache]]
 
-    return self
+
+    instance._log = logger
+    instance._data = {}
+
+
+    logger:debug('created'):leave_context()
+
+    return instance
 end
 
 
@@ -208,14 +216,14 @@ end
 
 ---@return boolean is_stored
 function DBReaderSessionCache:_is_cache_stored()
-    return core:svr_load_bool(_CACHE_STORED_FLAG)
+    return core:svr_load_bool(self._cache_stored_flag_key)
 end
 
 
 ---@param is_stored boolean 
 ---@return nil
 function DBReaderSessionCache:_set_cache_stored_state(is_stored)
-    core:svr_save_bool(_CACHE_STORED_FLAG, is_stored)
+    core:svr_save_bool(self._cache_stored_flag_key, is_stored)
     self._log:debug('cache flag set to:', is_stored)
 end
 

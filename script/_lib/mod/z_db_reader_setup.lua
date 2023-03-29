@@ -105,7 +105,7 @@ if db_address == nil then
 end
 l.info('db_reader: address of DB (actual fst meta table entry, but who cares): ' .. mr.tostring(db_address))
 
-local cache = DBReaderSessionCache.new(l.logger)
+local cache = DBReaderSessionCache:new(l.logger)
 cache:init()
 
 local registry_data, db_reader_data = cache:get()
