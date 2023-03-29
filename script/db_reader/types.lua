@@ -107,7 +107,7 @@ return {
 
 ---@class DBTable__action_results_additional_outcomes: DBTable
 ---@field pk {[string]: Id}  -- key
----@field records table <string, Record__action_results_additional_outcomes>
+---@field records table <Id, Record__action_results_additional_outcomes>
 ---@field indexes {outcome: TIndex<string>, action_result_key: TIndex<string>}
 
 
@@ -117,7 +117,7 @@ return {
 
 ---@class DBTable__agent_actions: DBTable
 ---@field pk {[string]: Id}  -- unique_id
----@field records table <string, Record__agent_actions>
+---@field records table <Id, Record__agent_actions>
 ---@field indexes nil
 
 
@@ -127,7 +127,7 @@ return {
 
 ---@class DBTable__armed_citizenry_unit_groups: DBTable
 ---@field pk {[string]: Id}  -- unit_group
----@field records table <string, Record__armed_citizenry_unit_groups>
+---@field records table <Id, Record__armed_citizenry_unit_groups>
 ---@field indexes nil
 
 
@@ -137,7 +137,7 @@ return {
 
 ---@class DBTable__armed_citizenry_units_to_unit_groups_junctions: DBTable
 ---@field pk {[string]: Id}  -- id
----@field records table <string, Record__armed_citizenry_units_to_unit_groups_junctions>
+---@field records table <Id, Record__armed_citizenry_units_to_unit_groups_junctions>
 ---@field indexes {unit: TIndex<string>, unit_group: TIndex<string>}
 
 
@@ -147,5 +147,5 @@ return {
 
 ---@class DBTable__building_level_armed_citizenry_junctions: DBTable
 ---@field pk {[string]: Id}  -- id
----@field records table <string, Record__building_level_armed_citizenry_junctions>
+---@field records table <Id, Record__building_level_armed_citizenry_junctions>
 ---@field indexes {building_level: TIndex<string>, unit_group: TIndex<string>}
