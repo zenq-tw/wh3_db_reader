@@ -294,7 +294,7 @@ function DBReader:_build_table(table_meta, table_data, rows_count)
 
     local records, pk = utils.make_table_data(table_data.rows, table_meta.columns, table_meta.key_column, rows_count)
 
-    local is_valid, prepared_indexes
+    local is_valid, prepared_indexes   ---@type boolean|nil, TableIndexes|nil
     if table_data.indexes ~= nil then
         is_valid, prepared_indexes = self:_check_indexes_integrity(records, table_data.indexes)
         if not is_valid then
@@ -303,23 +303,22 @@ function DBReader:_build_table(table_meta, table_data, rows_count)
         end
     end
 
-    local db_table = {  ---@type DBTable
-        count=rows_count,
-        pk=pk,
-        records=records,
-        indexes=prepared_indexes,
-    }
+    local db_table = records  ---@type DBTable
+    db_table.count = rows_count
+    db_table.pk = pk
+    db_table.indexes = prepared_indexes
 
     self._log:debug('table data was built'):leave_context()
     return db_table
 end
 
+
 ---@param records table <Id, Record>
 ---@param indexes RawTableIndexes
 ---@return boolean is_valid, TableIndexes? prepared_indexes
 function DBReader:_check_indexes_integrity(records, indexes)
-    local prepared_indexes = collections.defaultdict(collections.factories.table)  ---@type defaultdict<Column, {[Field]: RecordIds}>
-    local ids
+    local prepared_indexes = collections.defaultdict(collections.factories.table)  ---@type defaultdict<Column, {[Field]: TCountedArray<Id>}>
+    local ids   ---@type TCountedArray<Id>
     local counter
 
     for column, index in pairs(indexes) do
@@ -341,10 +340,8 @@ function DBReader:_check_indexes_integrity(records, indexes)
                 ids[i] = id
             end
             
-            prepared_indexes[column][value] = {
-                count=counter,
-                array=ids,
-            }
+            ids.count = counter
+            prepared_indexes[column][value] = ids
         end
     end
 

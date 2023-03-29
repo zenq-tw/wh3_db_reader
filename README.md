@@ -227,8 +227,8 @@ Specific table data extractor registration method
 DBTable := {
     'count': integer
     'pk': { [PrimaryKey]: Id}
-    'records': { [Id]: Record }
     'indexes': TableIndexes | nil
+    [Id]: Record
 }
 ```
 #### `Id`
@@ -255,9 +255,14 @@ Field := string | number | boolean
 ```
 #### `TableIndexes`
 ```
-TableIndexes := {
-    [Column]: { [Field]: { 'count': integer, 'array': Id[] } }
-}
+TableIndexes := { [Column]: { [Field]: CountedArray<Id> } }
+```
+#### `CountedArray<T>`
+```
+CountedArray<T> := {
+    'count': integer,
+    [integer]: T,
+} 
 ```
 #### `TableDataExtractor`
 ```
@@ -277,7 +282,7 @@ TableData := {
 
 #### __Notes__:
 > More about used notations you can read [here](https://github.com/LuaLS/lua-language-server/wiki/Annotations)
-1. `{'name': <type>}` - means table with key `name` existed with type: `<type>`
+1. `{'name': <type>}` - means table with key `name` existed with type: `type`
     * example: 
         ```lua
         ---@type {'name': number}
@@ -286,7 +291,7 @@ TableData := {
         print(type(a.other_key)) -- nil
         
         ```
-2. `{ [<type1>]: <type2> }` - means table where keys are `<type1>` and values are  `<type2>`
+2. `{ [<type1>]: <type2> }` - means table where keys are `type1` and values are  `type2`
     * example: 
         ```lua
         ---@type { [string]: number }
@@ -296,8 +301,8 @@ TableData := {
             print(type(value))  -- number
         end
         ```
-3. `<type>[]` - means __indexed array__ of `<type>`
-    * i.e. `table` with __key__ as `number` and __value__ as `<type>`
+3. `<type>[]` - means __indexed array__ of `type`
+    * i.e. `table` with __key__ as `number` and __value__ as `type`
     * `table < number, <type> >`
     * example: `string[] := table<number, string>`
         * example: 
@@ -309,7 +314,14 @@ TableData := {
         print(type(a.other_key)) -- nil
         
         ```
-
+4. `CountedArray<T>` - means __indexed array__ of type `T` with additional field `count`
+    * example: 
+        ```lua
+        local a  ---@type CountedArray<string>
+        for i=1, a.count do
+            print(type(a[i]))    -- string
+        end
+        ```
 
 
 ## Contribute

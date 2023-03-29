@@ -2,13 +2,14 @@
 
 
 
+---@alias TCountedArray<V> {count: integer, [integer]: V} 
+
 ---@alias Id integer
 ---@alias Column string
 ---@alias PrimaryKey string|number
 ---@alias Field PrimaryKey|boolean
 
 ---@alias TRawIndex<T> {[T]: Id[]}
----@alias TIndex<T> {[T]: nil | {count: integer, array: Id[]}}
 
 ---@alias RawTableIndexes {[Column]: TRawIndex<Field>}
 ---@alias RawTableData {rows: Field[][], indexes: RawTableIndexes | nil}
@@ -21,16 +22,18 @@
 ---@field nullable_column_ids integer[] | nil table columns whose values can be <nil> (positions in `columns` array)
 ---@field extractor TableDataExtractor function that will extract table data
 
+
 ---@alias Record {[Column]: Field}
 
----@alias RecordIds { count: integer, array: Id[] }
----@alias TableIndexes { [Column]: { [Field]: RecordIds } }
+---@alias TIndex<T> {[T]: nil | TCountedArray<Id> }
+---@alias TableIndexes { [Column]: TIndex<Field> }
 
 ---@class DBTable
 ---@field count integer
 ---@field pk {[PrimaryKey]: Id}
----@field records table <Id, Record>
 ---@field indexes TableIndexes | nil
+---@field [Id] Record
+
 
 
 ---@class DBTableMeta
@@ -100,6 +103,7 @@ return {
 ==================================================================================================================================
 --]]
 
+--TODO: rewrite when typechecker will be able to deal with generic classes
 
 --------------------------------------------- action_results_additional_outcomes --------------------------------------------------
 
@@ -107,8 +111,8 @@ return {
 
 ---@class DBTable__action_results_additional_outcomes: DBTable
 ---@field pk {[string]: Id}  -- key
----@field records table <Id, Record__action_results_additional_outcomes>
 ---@field indexes {outcome: TIndex<string>, action_result_key: TIndex<string>}
+---@field [Id] Record__action_results_additional_outcomes
 
 
 ------------------------------------------------------ agent_actions --------------------------------------------------------------
@@ -117,8 +121,8 @@ return {
 
 ---@class DBTable__agent_actions: DBTable
 ---@field pk {[string]: Id}  -- unique_id
----@field records table <Id, Record__agent_actions>
 ---@field indexes {action_results_combined: TIndex<string>}
+---@field [Id] Record__agent_actions
 
 
 ------------------------------------------------- armed_citizenry_unit_groups -----------------------------------------------------
@@ -127,8 +131,8 @@ return {
 
 ---@class DBTable__armed_citizenry_unit_groups: DBTable
 ---@field pk {[string]: Id}  -- unit_group
----@field records table <Id, Record__armed_citizenry_unit_groups>
 ---@field indexes nil
+---@field [Id] Record__armed_citizenry_unit_groups
 
 
 ----------------------------------------- armed_citizenry_units_to_unit_groups_junctions -------------------------------------------
@@ -137,8 +141,8 @@ return {
 
 ---@class DBTable__armed_citizenry_units_to_unit_groups_junctions: DBTable
 ---@field pk {[string]: Id}  -- id
----@field records table <Id, Record__armed_citizenry_units_to_unit_groups_junctions>
 ---@field indexes {unit: TIndex<string>, unit_group: TIndex<string>}
+---@field [Id] Record__armed_citizenry_units_to_unit_groups_junctions
 
 
 -------------------------------------------- building_level_armed_citizenry_junctions ----------------------------------------------
@@ -147,5 +151,5 @@ return {
 
 ---@class DBTable__building_level_armed_citizenry_junctions: DBTable
 ---@field pk {[string]: Id}  -- id
----@field records table <Id, Record__building_level_armed_citizenry_junctions>
 ---@field indexes {building_level: TIndex<string>, unit_group: TIndex<string>}
+---@field [Id] Record__building_level_armed_citizenry_junctions
