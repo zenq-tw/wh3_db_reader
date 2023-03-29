@@ -45,14 +45,15 @@ end
 --==================================================================================================================================--
 
 
----@alias TNonOverwritableDict<K, V> {[K]: V}
+---@alias TNonRewritableDict<K, V> {[K]: V}
 
 ---### will raise error on key overwriting
+---@param dict_id_hint? string string identifying the dictionary in the raised error message
 ---@param nil_values? boolean default is `false`
 ---@param allow_same_values_assignment? boolean default is `true`
 ---@return table
 ---to drop all current content perform call on instance: `dict_instance()`
-collections.NonRewritableDict = function (nil_values, allow_same_values_assignment)
+collections.NonRewritableDict = function (dict_id_hint, nil_values, allow_same_values_assignment)
     if type(nil_values) ~= "boolean" then nil_values = false end
     if type(allow_same_values_assignment) ~= "boolean" then allow_same_values_assignment = true end
 
@@ -88,6 +89,17 @@ collections.NonRewritableDict = function (nil_values, allow_same_values_assignme
         is_valid_assignment = function (old_value, new_value) return old_value == nil or old_value == new_value end
     end
     
+    local const_err_msg_part
+    if dict_id_hint == nil then
+        const_err_msg_part = "attempting to overwrite dict key '"
+    else
+        const_err_msg_part = "attempting to overwrite " .. dict_id_hint .. " key '"
+    end
+    
+    local form_error_msg = function (key, old_value, new_value)
+        return const_err_msg_part .. key .. "' with new value = " .. tostring(new_value) .. ' (old = ' .. tostring(old_value) .. ')'
+    end
+
     
     local meta ={
         __call=function () data = {} end,  -- clear dict content
@@ -97,7 +109,7 @@ collections.NonRewritableDict = function (nil_values, allow_same_values_assignme
             print(key, tostring(current_value), tostring(new_value))
             assert(
                 is_valid_assignment(current_value, new_value),
-                "attempting to overwrite dict key '" .. key .. "' with new value = " .. tostring(new_value) .. ' (old = ' .. tostring(non_rewritable_dict[key]) .. ')'
+                form_error_msg(key, non_rewritable_dict[key], new_value)
             )
             set_value(non_rewritable_dict, key, new_value)
         end,
