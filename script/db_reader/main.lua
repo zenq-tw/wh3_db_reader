@@ -1,9 +1,8 @@
-local functools = assert(core:load_global_script('script.db_reader.functools'))  ---@module "script.db_reader.functools"
-local collections = assert(core:load_global_script('script.db_reader.collections'))  ---@module "script.db_reader.collections"
+local zlib = assert(core:load_global_script('script.db_reader.zlib.header'))  ---@module "script.db_reader.zlib.header"
+
 local validators = assert(core:load_global_script('script.db_reader.validators'))  ---@module "script.db_reader.validators"
 local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@module "script.db_reader.utils"
 
-assert(core:load_global_script('script.db_reader.extensions'))  ---@module "script.db_reader.extensions"
 
 
 --[[
@@ -179,7 +178,7 @@ function DBReader:get_table(table_name)
         return
     end
     
-    db_table = table.deepcopy(db_table)
+    db_table = zlib.table.deepcopy(db_table)
 
     self._log:debug('table copy returned'):leave_context()
     return db_table
@@ -235,7 +234,7 @@ end
 ---@protected
 ---@param meta DBTableMeta
 function DBReader:_load_table_safe(meta)
-    local is_success, error_msg = functools.safe(self._load_table, self, meta)
+    local is_success, error_msg = zlib.functools.safe(self._load_table, self, meta)
     if not is_success then
         self._log:error('failed to load table data:', error_msg)
     end
@@ -317,7 +316,7 @@ end
 ---@param indexes RawTableIndexes
 ---@return boolean is_valid, TableIndexes? prepared_indexes
 function DBReader:_check_indexes_integrity(records, indexes)
-    local prepared_indexes = collections.defaultdict(collections.factories.table)  ---@type defaultdict<Column, {[Field]: TCountedArray<Id>}>
+    local prepared_indexes = zlib.collections.defaultdict(zlib.functools.factories.table)  ---@type defaultdict<Column, {[Field]: TCountedArray<Id>}>
     local ids   ---@type TCountedArray<Id>
     local counter
 

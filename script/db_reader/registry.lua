@@ -1,7 +1,7 @@
 local mr = assert(_G.memreader)
+local zlib = assert(core:load_global_script('script.db_reader.zlib.header'))  ---@module "script.db_reader.zlib.header"
 
 local T = assert(core:load_global_script('script.db_reader.types'))  ---@module "script.db_reader.types"
-local functools = assert(core:load_global_script('script.db_reader.functools'))  ---@module "script.db_reader.functools"
 local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@module "script.db_reader.utils"
 
 
@@ -52,7 +52,7 @@ end
 ---@param old_table DBTableMeta
 ---@return DBTableDumpedMeta
 local function _prepare_table_for_dump(old_table)
-    local new_table = table.deepcopy(old_table)
+    local new_table = zlib.table.deepcopy(old_table)
     new_table.ptr_hex = mr.tostring(new_table.ptr)
     new_table.ptr = nil
 
@@ -63,7 +63,7 @@ end
 ---@param restored_table DBTableDumpedMeta
 ---@return DBTableMeta
 local function _prepare_table_restored_from_dump(restored_table)
-    local new_table = table.deepcopy(restored_table)
+    local new_table = zlib.table.deepcopy(restored_table)
     new_table.ptr = tonumber(new_table.ptr_hex, 16)
     new_table.ptr_hex = nil
 
@@ -85,7 +85,7 @@ function DBRegistry:_init(data)
     else
         self._log:debug('------------------------------------------------------------------------------------'):info('reading db tables names')
     
-        local is_success, err_msg, results = functools.safe(self._get_db_tables, self, self._db_address)
+        local is_success, err_msg, results = zlib.functools.safe(self._get_db_tables, self, self._db_address)
         if not is_success then
             self._log:error('failed:', err_msg)
             return
