@@ -1,9 +1,11 @@
 local mr = assert(_G.memreader)
+local zlib = assert(core:load_global_script('script.db_reader.zlib.header'))  ---@module "script.db_reader.zlib.header"
 
 local T = assert(core:load_global_script('script.db_reader.types'))  ---@module "script.db_reader.types"
-local func = assert(core:load_global_script('script.db_reader.functools'))  ---@module "script.db_reader.functools"
-local collections = assert(core:load_global_script('script.db_reader.collections'))  ---@module "script.db_reader.collections"
 local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@module "script.db_reader.utils"
+
+
+local lazy = zlib.functools.lazy
 
 
 
@@ -39,7 +41,7 @@ return {
 
     ---@type TableDataExtractor
     extractor=function(ptr, logger)
-        logger:debug('table meta address is:', func.lazy(mr.tostring, ptr))
+        logger:debug('table meta address is:', lazy(mr.tostring, ptr))
     
         local guard_value = 1000
         local rows_count = mr.read_int32(ptr, T.uint32(0x08))
@@ -50,7 +52,7 @@ return {
         end
     
         ptr = mr.read_pointer(ptr, T.uint32(0x10))
-        logger:debug('array (fst elem addr):', func.lazy(mr.tostring, ptr))
+        logger:debug('array (fst elem addr):', lazy(mr.tostring, ptr))
 
 
         ------------------------------------ Variables definition ------------------------------------
@@ -61,12 +63,12 @@ return {
 
         local indexes = {}  ---@type {critical_failure: TRawIndex<string>, failure: TRawIndex<string>, opportune_failure: TRawIndex<string>, success: TRawIndex<string>, critical_success: TRawIndex<string>, cannot_fail: TRawIndex<string> }
 
-        indexes.critical_failure    = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Id[]>
-        indexes.failure             = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Id[]>
-        indexes.opportune_failure   = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Id[]>
-        indexes.success             = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Id[]>
-        indexes.critical_success    = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Id[]>
-        indexes.cannot_fail         = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Id[]>
+        indexes.critical_failure    = zlib.collections.defaultdict(zlib.functools.factories.table)   ---@type defaultdict<string, Id[]>
+        indexes.failure             = zlib.collections.defaultdict(zlib.functools.factories.table)   ---@type defaultdict<string, Id[]>
+        indexes.opportune_failure   = zlib.collections.defaultdict(zlib.functools.factories.table)   ---@type defaultdict<string, Id[]>
+        indexes.success             = zlib.collections.defaultdict(zlib.functools.factories.table)   ---@type defaultdict<string, Id[]>
+        indexes.critical_success    = zlib.collections.defaultdict(zlib.functools.factories.table)   ---@type defaultdict<string, Id[]>
+        indexes.cannot_fail         = zlib.collections.defaultdict(zlib.functools.factories.table)   ---@type defaultdict<string, Id[]>
 
         local array_elem_data_ptr, sub_structure_ptr
         local unique_id, ability, agent
@@ -78,7 +80,7 @@ return {
         ------------------------------------ Action Results combined index stuff ------------------------------------
 
 
-        local action_already_in_index = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, {[Id]: true}>
+        local action_already_in_index = zlib.collections.defaultdict(zlib.functools.factories.table)   ---@type defaultdict<string, {[Id]: true}>
         local action_result
 
         ---@param offset number
@@ -87,7 +89,7 @@ return {
         ---@return string
         local read_action_result = function(offset, record_id, type)
             sub_structure_ptr = mr.read_pointer(array_elem_data_ptr, offset)
-            logger:debug('address of', record_id, 'record ActionResult sub-struct (', type , '):', func.lazy(mr.tostring, sub_structure_ptr))
+            logger:debug('address of', record_id, 'record ActionResult sub-struct (', type , '):', lazy(mr.tostring, sub_structure_ptr))
 
             action_result = utils.read_string_CA(sub_structure_ptr, 0x08)
             logger:debug(record_id, type, '=', action_result)
@@ -105,10 +107,10 @@ return {
 
         logger:add_indent()
         for id=1, rows_count do
-            logger:debug('address of', id, 'array elem (== ptr to record struct):', func.lazy(mr.tostring, ptr))
+            logger:debug('address of', id, 'array elem (== ptr to record struct):', lazy(mr.tostring, ptr))
 
             array_elem_data_ptr = mr.read_pointer(ptr)
-            logger:debug('address of', id, 'record struct:', func.lazy(mr.tostring, array_elem_data_ptr))
+            logger:debug('address of', id, 'record struct:', lazy(mr.tostring, array_elem_data_ptr))
 
 
              ------------------------------------ Fields Parsing ------------------------------------
@@ -122,14 +124,14 @@ return {
 
 
             sub_structure_ptr = mr.read_pointer(array_elem_data_ptr, 0x18)
-            logger:debug('address of', id, 'record Ability sub-struct:', func.lazy(mr.tostring, sub_structure_ptr))
+            logger:debug('address of', id, 'record Ability sub-struct:', lazy(mr.tostring, sub_structure_ptr))
             ability = utils.read_string_CA(sub_structure_ptr, 0x08)
             logger:debug(id, 'ability:', ability)
 
 
 
             sub_structure_ptr = mr.read_pointer(array_elem_data_ptr, 0x20)
-            logger:debug('address of', id, 'record Agent sub-struct:', func.lazy(mr.tostring, sub_structure_ptr))
+            logger:debug('address of', id, 'record Agent sub-struct:', lazy(mr.tostring, sub_structure_ptr))
             agent = utils.read_string_CA(sub_structure_ptr, 0x08, true)
             logger:debug(id, 'agent:', agent)
 

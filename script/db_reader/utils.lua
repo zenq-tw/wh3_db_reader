@@ -1,7 +1,8 @@
 local mr = assert(_G.memreader)
+local zlib = assert(core:load_global_script('script.db_reader.zlib.header'))  ---@module "script.db_reader.zlib.header"
+
 local T = assert(core:load_global_script('script.db_reader.types'))  ---@module "script.db_reader.types"
-local func = assert(core:load_global_script('script.db_reader.functools'))  ---@module "script.db_reader.functools"
-local collections = assert(core:load_global_script('script.db_reader.collections'))  ---@module "script.db_reader.collections"
+
 
 local utils = {}
 
@@ -18,10 +19,10 @@ local base_shift = "044DF700"  -- 0x044DF700
 ---@return pointer
 function utils.get_db_address(logger)
     local ptr = mr.base
-    logger:debug('base game space address is:', func.lazy(mr.tostring, ptr))
+    logger:debug('base game space address is:', zlib.functools.lazy(mr.tostring, ptr))
 
     ptr = mr.read_pointer(ptr, T.uint32(tonumber(base_shift, 16)))  -- now pointer reffer to some special structure that has pointer to fst db meta table record
-    logger:debug('address of unkown service-structure (that helds pointer to DB):', func.lazy(mr.tostring, ptr))
+    logger:debug('address of unkown service-structure (that helds pointer to DB):', zlib.functools.lazy(mr.tostring, ptr))
     
     ptr = mr.read_pointer(ptr, T.uint32(0x10))
     
@@ -161,7 +162,7 @@ function utils.make_table_data(rows, columns, key_column, rows_count, columns_co
     columns_count = columns_count or #columns
 
     local records = {}  ---@type table<Id, Record>
-    local pk = collections.NonRewritableDict('PrimaryKeyToId', true, false)  ---@type TNonRewritableDict<PrimaryKey, Id>
+    local pk = zlib.collections.NonRewritableDict('PrimaryKeyToId', true, false)  ---@type TNonRewritableDict<PrimaryKey, Id>
 
     local row, record
     for id=1, rows_count do
@@ -188,14 +189,15 @@ end
 
 
 function utils.merge_indexed_tables(indexed1, indexed2)
-    local lkp1 = table.indexed_to_lookup(indexed1)
+    local indexed1_size = #indexed1
+
+    local lkp1 = zlib.table.indexed_to_lookup(indexed1, indexed1_size)
 
     if not lkp1 then
         return
     end
 
     local merged = {}
-    local indexed1_size = #indexed1
 
     for i=1, indexed1_size do
         merged[i] = indexed1[i]

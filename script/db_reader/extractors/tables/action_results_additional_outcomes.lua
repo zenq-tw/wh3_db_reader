@@ -1,9 +1,12 @@
 local mr = assert(_G.memreader)
+local zlib = assert(core:load_global_script('script.db_reader.zlib.header'))  ---@module "script.db_reader.zlib.header"
 
 local T = assert(core:load_global_script('script.db_reader.types'))  ---@module "script.db_reader.types"
-local func = assert(core:load_global_script('script.db_reader.functools'))  ---@module "script.db_reader.functools"
-local collections = assert(core:load_global_script('script.db_reader.collections'))  ---@module "script.db_reader.collections"
 local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@module "script.db_reader.utils"
+
+
+local lazy = zlib.functools.lazy
+local xor = zlib.functools.xor
 
 
 
@@ -52,7 +55,7 @@ return {
 
     ---@type TableDataExtractor
     extractor=function(ptr, logger)
-        logger:debug('table meta address is:', func.lazy(mr.tostring, ptr))
+        logger:debug('table meta address is:', lazy(mr.tostring, ptr))
     
         local guard_value = 1000
         local rows_count = mr.read_int32(ptr, T.uint32(0x08))
@@ -63,7 +66,7 @@ return {
         end
     
         ptr = mr.read_pointer(ptr, T.uint32(0x10))
-        logger:debug('array (fst elem addr):', func.lazy(mr.tostring, ptr))
+        logger:debug('array (fst elem addr):', lazy(mr.tostring, ptr))
 
 
         local next_array_element_shift = T.uint32(0x08)
@@ -72,8 +75,13 @@ return {
         local array_elem_data_ptr, sub_structure_ptr, one_exist_but_not_another
 
         local indexes = {}  ---@type {outcome: TRawIndex<string>, action_result_key: TRawIndex<string>}
-        local outcome_index = collections.defaultdict(collections.factories.table)   ---@type defaultdict<string, Id[]>
-        local action_result_key_index = collections.defaultdict(collections.factories.table)  ---@type defaultdict<string, Id[]>
+
+        local outcome_index = zlib.collections.defaultdict(  ---@type defaultdict<string, Id[]>
+            zlib.functools.factories.table
+        )
+        local action_result_key_index = zlib.collections.defaultdict(  ---@type defaultdict<string, Id[]>
+            zlib.functools.factories.table
+        )
 
         indexes.outcome = outcome_index
         indexes.action_result_key = action_result_key_index
@@ -84,10 +92,10 @@ return {
 
         logger:add_indent()
         for i=1, rows_count do
-            logger:debug('address of', i, 'array elem (== ptr to record struct):', func.lazy(mr.tostring, ptr))
+            logger:debug('address of', i, 'array elem (== ptr to record struct):', lazy(mr.tostring, ptr))
 
             array_elem_data_ptr = mr.read_pointer(ptr)
-            logger:debug('address of', i, 'record struct:', func.lazy(mr.tostring, array_elem_data_ptr))
+            logger:debug('address of', i, 'record struct:', lazy(mr.tostring, array_elem_data_ptr))
 
 
             --================================== Fields Parsing ==================================--
@@ -106,7 +114,7 @@ return {
 
 
             sub_structure_ptr = mr.read_pointer(array_elem_data_ptr, 0x20)
-            logger:debug('address of', i, 'record Effect sub-struct:', func.lazy(mr.tostring, sub_structure_ptr))
+            logger:debug('address of', i, 'record Effect sub-struct:', lazy(mr.tostring, sub_structure_ptr))
             
             if mr.eq(sub_structure_ptr, utils.null_address) then
                 effect_record = nil
@@ -117,7 +125,7 @@ return {
 
 
             sub_structure_ptr = mr.read_pointer(array_elem_data_ptr, 0x28)
-            logger:debug('address of', i, 'record EffectScope sub-struct:', func.lazy(mr.tostring, sub_structure_ptr))
+            logger:debug('address of', i, 'record EffectScope sub-struct:', lazy(mr.tostring, sub_structure_ptr))
             
             if mr.eq(sub_structure_ptr, utils.null_address) then
                 effect_scope_record = nil
@@ -126,7 +134,7 @@ return {
             end
             logger:debug(i, 'effect_scope_record:', tostring(effect_scope_record))
 
-            one_exist_but_not_another = func.xor(effect_record, effect_scope_record)
+            one_exist_but_not_another = xor(effect_record, effect_scope_record)
             if one_exist_but_not_another then
                 logger:error('invalid record?: "effect" or "scope_effect" is missing (but another one is present)! key =', key)
             end

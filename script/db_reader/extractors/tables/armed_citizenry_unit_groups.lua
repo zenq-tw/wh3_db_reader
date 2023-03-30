@@ -1,8 +1,11 @@
 local mr = assert(_G.memreader)
+local zlib = assert(core:load_global_script('script.db_reader.zlib.header'))  ---@module "script.db_reader.zlib.header"
 
 local T = assert(core:load_global_script('script.db_reader.types'))  ---@module "script.db_reader.types"
-local func = assert(core:load_global_script('script.db_reader.functools'))  ---@module "script.db_reader.functools"
 local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@module "script.db_reader.utils"
+
+
+local lazy = zlib.functools.lazy
 
 
 
@@ -14,7 +17,7 @@ return {
 
     ---@type TableDataExtractor
     extractor=function(ptr, logger)
-        logger:debug('table meta address is:', func.lazy(mr.tostring, ptr))
+        logger:debug('table meta address is:', lazy(mr.tostring, ptr))
 
         local guard_value = 5000
         local rows_count = mr.read_int32(ptr, T.uint32(0x08))
@@ -25,7 +28,7 @@ return {
         end
 
         ptr = mr.read_pointer(ptr, T.uint32(0x10))
-        logger:debug('address of fst array elem:', func.lazy(mr.tostring, ptr))
+        logger:debug('address of fst array elem:', lazy(mr.tostring, ptr))
 
         local array_elem_data_ptr, value
         local rows = {}
@@ -33,10 +36,10 @@ return {
 
         logger:add_indent()
         for id=1, rows_count do
-            logger:debug('address of', id, 'array elem (== ptr to record struct):', func.lazy(mr.tostring, ptr))
+            logger:debug('address of', id, 'array elem (== ptr to record struct):', lazy(mr.tostring, ptr))
 
             array_elem_data_ptr = mr.read_pointer(ptr)
-            logger:debug('address of', id, 'record struct:', func.lazy(mr.tostring, array_elem_data_ptr))
+            logger:debug('address of', id, 'record struct:', lazy(mr.tostring, array_elem_data_ptr))
 
             value = utils.read_string_CA(array_elem_data_ptr, 0x08)
             logger:debug(id, 'value:', value)
