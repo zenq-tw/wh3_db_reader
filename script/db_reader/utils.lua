@@ -188,34 +188,6 @@ end
 
 
 
-function utils.merge_indexed_tables(indexed1, indexed2)
-    local indexed1_size = #indexed1
-
-    local lkp1 = zlib.table.indexed_to_lookup(indexed1, indexed1_size)
-
-    if not lkp1 then
-        return
-    end
-
-    local merged = {}
-
-    for i=1, indexed1_size do
-        merged[i] = indexed1[i]
-    end
-
-    local i = indexed1_size + 1
-    for j=1, #indexed2 do
-        if lkp1[indexed2[j]] == nil then
-            merged[i] = indexed2[j]
-            i = i + 1 
-        end
-        
-    end
-
-    return merged
-end
-
-
 --- Author: Vandy (Groove Wizard)
 --- @param t table
 --- @param loop_value number

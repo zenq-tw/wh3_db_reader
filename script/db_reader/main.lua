@@ -69,7 +69,7 @@ function DBReader:_init(data)
     if data ~= nil then
         self._loaded_tables = data.loaded_tables
 
-        local merged_table = utils.merge_indexed_tables(self._requested_tables, data.requested_tables)
+        local merged_table = zlib.table.merge_indexed_tables(self._requested_tables, data.requested_tables)
         if merged_table then
             self._requested_tables = merged_table    
         end
