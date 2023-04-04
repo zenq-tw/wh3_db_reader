@@ -52,7 +52,7 @@ end
 ---@param old_table DBTableMeta
 ---@return DBTableDumpedMeta
 local function _prepare_table_for_dump(old_table)
-    local new_table = zlib.table.deepcopy(old_table)
+    local new_table = zlib.table.deepcopy(old_table)       --[[@as DBTableDumpedMeta]]
     new_table.ptr_hex = mr.tostring(new_table.ptr)
     new_table.ptr = nil
 
@@ -63,8 +63,8 @@ end
 ---@param restored_table DBTableDumpedMeta
 ---@return DBTableMeta
 local function _prepare_table_restored_from_dump(restored_table)
-    local new_table = zlib.table.deepcopy(restored_table)
-    new_table.ptr = tonumber(new_table.ptr_hex, 16)
+    local new_table = zlib.table.deepcopy(restored_table)  --[[@as DBTableMeta]]
+    new_table.ptr = T.ptr(tonumber(new_table.ptr_hex, 16))
     new_table.ptr_hex = nil
 
     return new_table
