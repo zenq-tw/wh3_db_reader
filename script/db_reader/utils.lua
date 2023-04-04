@@ -151,7 +151,7 @@ end
 
 
 ---map columns to rows from raw sources
----@param rows Field[]
+---@param rows Field[][]
 ---@param columns string[]
 ---@param key_column string
 ---@param rows_count? integer
