@@ -1,4 +1,4 @@
-local utils = assert(core:load_global_script('script.db_reader.utils'))  ---@module "script.db_reader.utils"
+local zlib = assert(core:load_global_script('script.db_reader.zlib.header'))  ---@module "script.db_reader.zlib.header"
 
 --TODO: make base SessionCache class
 
@@ -134,7 +134,7 @@ end
 ---@protected
 ---@param data DBReaderSessionData
 function DBReaderSessionCache:_dump_data_to_cache_file(data)
-    local dumped_data = utils.dump_table(data)
+    local dumped_data = zlib.table.dump(data)
     if not is_string(dumped_data) then
         self._log:error('failed to dump table')
         return false
