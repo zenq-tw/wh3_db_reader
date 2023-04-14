@@ -12,25 +12,55 @@ local utils = {}
 --==================================================================================================================================--
 
 
-local base_shift = "044DF700"  -- 0x044DF700
+---@return string?
+local function _match_offset_on_game_version(game_semver)
+    -- for some fckng reason CA replaced default `string.find` with their own implementation that makes only `plain` searching
+    local find = string.find_lua or string.find
+
+    -- v3.X.X
+    if find(game_semver, '^3%.')    then return '04300218' end      -- 0x04300218
+    
+    -- v2.4.X
+    if find(game_semver, '^2%.4%.') then return '044DF700' end      -- 0x044DF700
+end
+
+
+---@return uint32?
+local function _get_base_offset()
+    local full_version = common.game_version()
+    if not is_string(full_version) then return end
+
+    local semver = full_version:match('v([%d]%.[%d]+%.[%d]+)[%s]')
+    if not is_string(semver) then return end
+
+    local offset = _match_offset_on_game_version(semver)
+    if not is_string(offset) then return end
+
+    ---@cast offset string
+    return T.uint32(tonumber(offset, 16))
+end
 
 
 ---@param logger LoggerCls
 ---@return pointer?
 function utils.get_db_address(logger)
     logger:enter_context('utils.get_db_address')
+
+    local base_offset = _get_base_offset()
+    if not base_offset then return end
+
     local function _get_db_address()
     local ptr = mr.base
     logger:debug('base game space address is:', zlib.functools.lazy(mr.tostring, ptr))
 
-    ptr = mr.read_pointer(ptr, T.uint32(tonumber(base_shift, 16)))  -- now pointer reffer to some special structure that has pointer to fst db meta table record
+        ptr = mr.read_pointer(ptr, base_offset)  -- now pointer reffer to some special structure that has pointer to fst db meta table record
     logger:debug('address of unkown service-structure (that helds pointer to DB):', zlib.functools.lazy(mr.tostring, ptr))
     
         return mr.read_pointer(ptr, T.uint32(0x10))
     end
     
-    local is_success, err_msg, db_ptr = zlib.functools.safe(_get_db_address)
 
+    local is_success, err_msg, db_ptr = zlib.functools.safe(_get_db_address)
     if is_success then
         logger:debug('success'):leave_context()
         return db_ptr --[[@as pointer]]

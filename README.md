@@ -38,7 +38,8 @@ I would appreciate any feedback and bug reports.
 ## Limitations
 
 * Supported game versions:
-    * 2.4
+    * 3.0.0
+    * 2.4 - should still work. If anyone needs it, please get in touch.
 
 * Supported game modes:
     * campaign 
