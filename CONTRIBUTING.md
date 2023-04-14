@@ -73,7 +73,7 @@ The only way I can help you right now is to make a guide based on my current exp
 
 What is the plan:
 1. Find a first address of DB and generate pointermap with CheatEngine
-2. Find a second address of DB
+2. Find a second address of DB (and generate another pointermap)
 3. Perform pointer scan with those two addresses with usage of created pointermap
 4. Get a shorter valid pointer path that will be static within game restarts and in different modes (at least in `frontend` and `campaign`)
 5. Implement it in code
@@ -100,21 +100,29 @@ So, let's start:
 
     * if not, well, idk what could change in your future, but try to look for other addresses for this string
 
-3. Find pointers to this string structure. There can be many of them, just every time you get into a new space, try to understand what kind of structure it is:
-    
-    > Many game objects have a special pointer in memory at the beginning of the object structure. `ReClass.net` displays these pointers as referring to something like `<DATA>Warhammer3.exe.XXXXXXXX`. You must use the address of this pointer if you want to find the correct references to this object in memory. Keep this fact in mind - it will save you time in your research.
+3. Now for the most creative part - you need to "go up" the pointers until they take you to the "tablespace". What exactly should you do? I came up with the following algorithm:
+     1. Find a memory location near the current address using ReClass.net
+     2. Try to understand what kind of structure it is
+     3. Decide from which address you will try to "go up"
+     3. Search for pointers to the selected address using CheatEngine
+     4. Repeat from step number 1 until you are in the tablespace.
+   
+   But it can be difficult to follow this in practice. Right now, the "depth" of the pointer path from the tablespace to the "wh_event_category_conquest" string is 6-8. I wish you good luck and leave a couple of tips:
+    * Many objects have a special pointer in memory at the beginning of the object structure. `ReClass.net` displays these pointers as referring to something like `<DATA>Warhammer3.exe.XXXXXXXX`. You must use the address of this pointer if you want to find the correct references to this object in memory.
 
     * if it's a space where there are a lot of tightly packed pointers, then you're probably somewhere inside an array -> go to the first element of the array and look for pointers to it
 
-    * if there are two pointers to HEAP inside the current object - check if it is a linked list node
+    * if there are two pointers to <HEAP> inside the current object - check if it is a linked list node
         
         * if so, then try to find pointers to that node (usually there is an array somewhere containing pointers to all the nodes at once, providing access by index) or, if you can't find the pointers, try to find the beginning or end of this list. But it could cost you a lot of time
 
-    * if it's a regular game object -> just look for pointers to it
+    * if at some point you cannot find any pointer to the current game object above in the structure, then you are probably in a desired "tablespace" or you are in some strange dead end - try go back and start from a different base address
 
-    * if at some point you cannot find any pointer to the current game object above in the structure, then you are probably in a tablespace (which is good - you can move on), or you are in some strange dead end - try go back and start from a different base address
+    * The tablespace has a special structure that is different from what you will see most of the time. To give you an idea, below is a screenshot from Reclass.Net showing what the tablespace looks like (but there is no guarantee that it won't change with future updates):
+     ![image](https://user-images.githubusercontent.com/127660628/231942774-26f78535-f3c3-4e72-82c4-e6904550b547.png)
 
-4. After a few iterations of "getting an address -> looking for pointers to this object" you can probably find yourself in some memory space that looks different and contains a looong list of similar entities that, among other things, also contain a pointer to some string structure associated with the table name - congratulations! you are in db space. Go ahead and get the address of the first entry in that space. 
+
+5. When you have found the tablespace, move to its beginning and copy the address of the first record into the CE window. To make sure that you really found the address of the database, you can search for pointers to that addres. There should be a lot of them. 
 
 ### Generating pointer map
 
