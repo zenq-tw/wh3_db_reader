@@ -25,7 +25,7 @@ And if you finally find that you are not afraid of all of the above, then you ar
 
 4. go to the game db address in the `ReClass.net` window and look at the common structures and how they are used
 
-5. (optional) import `ReClass.net` projects from me and / or from `Сpesific` to see what structures we were able to determine in the course of our own study. This will help you quickly become familiar with the basic structures
+5. (optional) import `ReClass.net` projects from me and / or from `Cpecific` to see what structures we were able to determine in the course of our own study. This will help you quickly become familiar with the basic structures
 
 
 
