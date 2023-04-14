@@ -46,8 +46,6 @@ And if you finally find that you are not afraid of all of the above, then you ar
 
 4. once you decide you've finished your extractor and it can produce consistent results, it's time to start integrating it into `DBReader`:
 
-    0. install my [`zenq_logging`](https://github.com/zenq-tw/zenq_logging) mod so if something goes wrong you can get more context and useful information (I hope)
-
     1. register it with `DBReader:register_table_extractor()` described in the API section (in `README.md`) inside a listener callback function for the `DBReaderCreated` event and request your table with `DBReader:request_table()`
 
     2. launch the game and check if your table data is available. If not, then look at what is written in `log__db_reader.txt` in the game root folder to clarify what exactly happened.
