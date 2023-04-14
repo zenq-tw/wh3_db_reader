@@ -16,17 +16,27 @@ local base_shift = "044DF700"  -- 0x044DF700
 
 
 ---@param logger LoggerCls
----@return pointer
+---@return pointer?
 function utils.get_db_address(logger)
+    logger:enter_context('utils.get_db_address')
+    local function _get_db_address()
     local ptr = mr.base
     logger:debug('base game space address is:', zlib.functools.lazy(mr.tostring, ptr))
 
     ptr = mr.read_pointer(ptr, T.uint32(tonumber(base_shift, 16)))  -- now pointer reffer to some special structure that has pointer to fst db meta table record
     logger:debug('address of unkown service-structure (that helds pointer to DB):', zlib.functools.lazy(mr.tostring, ptr))
     
-    ptr = mr.read_pointer(ptr, T.uint32(0x10))
+        return mr.read_pointer(ptr, T.uint32(0x10))
+    end
     
-    return ptr 
+    local is_success, err_msg, db_ptr = zlib.functools.safe(_get_db_address)
+
+    if is_success then
+        logger:debug('success'):leave_context()
+        return db_ptr --[[@as pointer]]
+    end
+    
+    logger:debug('error:', err_msg):leave_context()
 end
 
 
