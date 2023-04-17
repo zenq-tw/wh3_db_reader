@@ -150,7 +150,7 @@ core:add_listener(
             some_table_extractor
         )
         
-        if not is_requested then
+        if not is_registered then
             out('failed to register custom table extractor: no such table or extractor for it already exist')
         end
     end,
