@@ -229,6 +229,7 @@ DBTable := {
     'count': integer
     'pk': { [PrimaryKey]: Id}
     'indexes': TableIndexes | nil
+    'checksum': TableChecksum
     [Id]: Record
 }
 ```
@@ -264,6 +265,13 @@ CountedArray<T> := {
     'count': integer,
     [integer]: T,
 } 
+```
+#### `TableChecksum`
+Aggregated MD5 digest calculated from table rows sorted by their MD5 hash [`MD5(sort(MD5(row)  for row in rows))`]
+
+Example: `cb21e3cc61ca3cc1002e3507e053c441`
+```
+TableChecksum := string
 ```
 #### `TableDataExtractor`
 ```

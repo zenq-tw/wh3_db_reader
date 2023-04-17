@@ -74,16 +74,20 @@ local extractors    ---@type ExtractorsRegistry
 local db_reader     ---@type DBReader
 
 
-local function _init_runtime_dependencies()
+local function _setup_runtime_dependencies()
+    logger:enter_context('dependencies')
+
     registry:_init(registry_data)
 
     extractors = ExtractorsRegistry:new(registry, logger)
     extractors:init()
+
+    logger:leave_context()
 end
 
 
-local function _setup_db_reader()
-    logger:enter_context('setup')
+local function _start_db_reader()
+    logger:enter_context('db_reader')
 
     db_reader = DBReader:_new(db_address, registry, extractors, logger)
     logger:info('created')
@@ -131,15 +135,17 @@ end
 
 
 if core:is_campaign() then
-    _init_runtime_dependencies()
+    _setup_runtime_dependencies()
 
     core:add_listener(
         'DBReaderCreation',
         'ScriptEventAllModsLoaded',
         true,
-        _setup_db_reader,
+        _start_db_reader,
         false
     )
+
+    logger:leave_context()
 
 else -- [frontend]
      -- for other modes there should be guard clauses at the beginning of this script
@@ -157,8 +163,12 @@ else -- [frontend]
                 logger:info('failed to initialize in frontend mode - DB was not constructed'):leave_context()
                 return
             end
-            _init_runtime_dependencies()
-            _setup_db_reader()
+            _setup_runtime_dependencies()
+
+            logger:leave_context()
+
+
+            _start_db_reader()
         end,
         1
     )

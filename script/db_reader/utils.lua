@@ -1,5 +1,6 @@
 local mr = assert(_G.memreader)
 local zlib = assert(core:load_global_script('script.db_reader.zlib.header'))  ---@module "script.db_reader.zlib.header"
+local md5 = zlib.load.dumped_c_extension('/script/db_reader/md5_dll', 'md5')  ---@type MD5Lib
 
 local T = assert(core:load_global_script('script.db_reader.types'))  ---@module "script.db_reader.types"
 
@@ -190,23 +191,42 @@ function utils.include_key_in_index(index, value, table_key)
 end
 
 
+---calculate MD5 hash for provided message (or `nil` if failed)
+---@param msg any
+---@return string?
+function utils.calculate_checksum(msg)
+    if type(msg) == 'table' then
+        msg = zlib.table.dump(msg, true, true)
+        if not msg then return end
+
+    elseif type(msg) ~= "string" then
+        msg = tostring(msg) 
+    end
+
+    return md5.calculate(msg)
+end
+
+
+
 ---map columns to rows from raw sources
 ---@param rows Field[][]
 ---@param columns string[]
 ---@param key_column string
 ---@param rows_count? integer
 ---@param columns_count? integer
----@return {[Id]: Record} records, {[PrimaryKey]: Id} pk
+---@return {[Id]: Record} records, {[PrimaryKey]: Id} pk, TableChecksum checksum
 function utils.make_table_data(rows, columns, key_column, rows_count, columns_count)
-    rows_count = rows_count or #rows
-    columns_count = columns_count or #columns
+    if type(rows_count)    ~= "number"      then  rows_count    = #rows      end
+    if type(columns_count) ~= "number"      then  columns_count = #columns   end
 
     local records = {}  ---@type table<Id, Record>
     local pk = zlib.collections.NonRewritableDict('PrimaryKeyToId', true, false)  ---@type TNonRewritableDict<PrimaryKey, Id>
+    local checksums = {}  ---@type string[]
 
     local row, record
     for id=1, rows_count do
         row = rows[id]
+        checksums[id] = assert(utils.calculate_checksum(row), 'failed to get digest for row[' .. id .. ']')
         record = {}
 
         for j=1, columns_count do
@@ -217,7 +237,14 @@ function utils.make_table_data(rows, columns, key_column, rows_count, columns_co
         pk[record[key_column]] = id
     end
 
-    return records, pk
+
+    table.sort(checksums)
+    
+    local md5_ctx = md5.new()
+    for id=1, rows_count do md5_ctx:update(checksums[id]) end
+    local table_checksum = md5_ctx:calculate()
+
+    return records, pk, table_checksum
 end
 
 

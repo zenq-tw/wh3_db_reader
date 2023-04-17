@@ -291,7 +291,7 @@ end
 function DBReader:_build_table(table_meta, table_data, rows_count)
     self._log:enter_context('build'):debug('building table data, count of records:', rows_count)
 
-    local records, pk = utils.make_table_data(table_data.rows, table_meta.columns, table_meta.key_column, rows_count)
+    local records, pk, checksum = utils.make_table_data(table_data.rows, table_meta.columns, table_meta.key_column, rows_count)
 
     local is_valid, prepared_indexes   ---@type boolean|nil, TableIndexes|nil
     if table_data.indexes ~= nil then
@@ -306,6 +306,7 @@ function DBReader:_build_table(table_meta, table_data, rows_count)
     db_table.count = rows_count
     db_table.pk = pk
     db_table.indexes = prepared_indexes
+    db_table.checksum = checksum
 
     self._log:debug('table data was built'):leave_context()
     return db_table

@@ -8,6 +8,7 @@
 ---@alias Column string
 ---@alias PrimaryKey string|number
 ---@alias Field PrimaryKey|boolean
+---@alias TableChecksum string aggregated MD5 from table rows [MD5(sort(MD5(row) for row in rows))]
 
 ---@alias TRawIndex<T> {[T]: Id[]}
 
@@ -32,6 +33,7 @@
 ---@field count integer
 ---@field pk {[PrimaryKey]: Id}
 ---@field indexes TableIndexes | nil
+---@field checksum TableChecksum  aggregated MD5 from table rows
 ---@field [Id] Record
 
 
