@@ -54,7 +54,7 @@ local logger = zlib.logging.Logger:new('db_reader')
 ======================================================================================
 --]]
 
-logger:enter_context('db_reader'):info('version =', zlib.functools.lazy(tostring, DBReader.version))
+logger:enter_context('setup'):info('Game version =', zlib.functools.lazy(common.game_version)):info('DBReader version =', DBReader.version)
 
 local db_address = utils.get_db_address(logger)
 if db_address == nil then
