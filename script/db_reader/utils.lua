@@ -51,12 +51,12 @@ function utils.get_db_address(logger)
     if not base_offset then return end
 
     local function _get_db_address()
-    local ptr = mr.base
-    logger:debug('base game space address is:', zlib.functools.lazy(mr.tostring, ptr))
+        local ptr = mr.base
+        logger:debug('base game space address is:', zlib.functools.lazy(mr.tostring, ptr))
 
         ptr = mr.read_pointer(ptr, base_offset)  -- now pointer reffer to some special structure that has pointer to fst db meta table record
-    logger:debug('address of unkown service-structure (that helds pointer to DB):', zlib.functools.lazy(mr.tostring, ptr))
-    
+        logger:debug('address of unkown service-structure (that helds pointer to DB):', zlib.functools.lazy(mr.tostring, ptr))
+        
         return mr.read_pointer(ptr, T.uint32(0x10))
     end
     
