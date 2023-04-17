@@ -338,14 +338,15 @@ Read `CONTRIBUTING.md` at the root of the repository.
 
 ## Future Plans <a name="future-plans"></a>
 
-0. support more tables :-)
-1. improve contribution documents
+* support more tables :-)
+* add more description for supported tables (which columns exactly are available)
+* improve contribution documents
     1. upload my ReClass.net project
     2. make it more people-friendly (verbose?))
-2. add support of MCT
+* add support of MCT
     1. DB tables export in common formats (tsv, csv)?
     2. View tables content in game?
-3. support battle mod
+* support battle mod?
 
 
 ## Credits
