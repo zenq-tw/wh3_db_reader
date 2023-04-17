@@ -45,10 +45,7 @@ local created_event         = 'DBReaderCreated'
 local initialized_event     = 'DBReaderInitialized'
 
 
-local logger = zlib.logging.Logger:new(
-    'db_reader',
-    zlib.logging.lvl.debug  --TODO: load value from MCT
-)
+local logger = zlib.logging.Logger:new('db_reader')
 
 
 --[[
