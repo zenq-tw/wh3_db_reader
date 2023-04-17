@@ -200,7 +200,7 @@ Get extracted database table data
     |1|table|[`DBTable`](#DBTable) or `nil` |table data or `nil`, if it was not loaded|
 
 
-#### `DBReader:register_table_extractor(table_name, columns, key_column_id, extractor)`
+#### `DBReader:register_table_extractor(table_name, columns, key_column_id, extractor, nullable_column_ids)`
 Specific table data extractor registration method
 * **parameters:**
     |pos| name   | type | description |
