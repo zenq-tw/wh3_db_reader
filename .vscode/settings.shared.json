@@ -1,0 +1,60 @@
+
+{
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#5A0F28",
+        "titleBar.activeBackground": "#7E1538",
+        "titleBar.activeForeground": "#FEFBFC"
+    },
+
+    // ----------------------------
+    //   LLS (LuaLanguageServer)
+    // ----------------------------
+
+    "Lua.runtime.version": "Lua 5.1",
+    "Lua.completion.autoRequire": false,
+    "Lua.workspace.preloadFileSize": 1500,
+    "Lua.workspace.ignoreSubmodules": false,
+    "Lua.diagnostics.workspaceDelay": 500,
+    "Lua.diagnostics.workspaceRate": 40,
+    "Lua.diagnostics.disable": [
+        "trailing-space"
+    ],
+    "Lua.hint.setType": true,
+    "Lua.workspace.ignoreDir": [
+        ".vscode",
+        ".git"
+    ],
+    "Lua.diagnostics.globals": [
+        "zlib"
+    ],
+
+    // ----------------------------
+    //      TODO's pluigin 
+    // ----------------------------
+
+    "todo-tree.general.tags":[
+        "BUG",
+        "HACK",
+        "FIXME",
+        "TODO",
+        "NOTE"
+    ],
+    "todo-tree.regex.regex": "[-]{2,3}($TAGS)",
+    "todo-tree.highlights.defaultHighlight": {
+        "foreground": "#f5ff33b4",
+        "background": "#4a362e",
+        "icon": "check",
+        "type": "text-and-comment"
+    },
+    "todo-tree.highlights.customHighlight": {
+        "FIXME": {
+            "foreground": "#ff9e42",
+            "icon": "beaker"
+        },
+        "NOTE": {
+            "foreground": "#ded7ff",
+            "background": "#7d7d7d63",
+            "icon": "alert"
+        }
+    }
+}
