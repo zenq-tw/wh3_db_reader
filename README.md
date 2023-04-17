@@ -2,12 +2,12 @@
 
 1. [Introduction](#introduction)
 2. [Limitations](#limitations)
-2. [List of supported tables](#supported-tables)
-3. [Usage](#usage)
-4. [API](#api)
+3. [List of supported tables](#supported-tables)
+4. [Usage](#usage)
 5. [Future Plans](#future-plans)
 6. [Contribute](#contribute)
-7. [Credits](#credits)
+7. [API](#api)
+8. [Credits](#credits)
 
 
 
@@ -157,6 +157,23 @@ core:add_listener(
     false  -- this event only happens once so we can safely remove our listener
 )
 ```
+
+## Contribute
+Read `CONTRIBUTING.md` at the root of the repository.
+
+## Future Plans <a name="future-plans"></a>
+
+* support more tables :-)
+* provide details for supported tables somewhere in the docs (exactly which columns are available)
+* improve contribution documents
+    1. upload my ReClass.net project
+    2. make it more people-friendly (verbose?))
+* add support of MCT
+    1. DB tables export in common formats (tsv, csv)?
+    2. View tables content in game?
+* support battle mod?
+
+----
 
 ## API
 ### DBReader
@@ -331,22 +348,6 @@ TableData := {
             print(type(a[i]))    -- string
         end
         ```
-
-
-## Contribute
-Read `CONTRIBUTING.md` at the root of the repository.
-
-## Future Plans <a name="future-plans"></a>
-
-* support more tables :-)
-* add more description for supported tables (which columns exactly are available)
-* improve contribution documents
-    1. upload my ReClass.net project
-    2. make it more people-friendly (verbose?))
-* add support of MCT
-    1. DB tables export in common formats (tsv, csv)?
-    2. View tables content in game?
-* support battle mod?
 
 
 ## Credits
