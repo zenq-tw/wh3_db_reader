@@ -14,7 +14,7 @@ local utils = {}
 
 ---@return string?
 local function _match_offset_on_game_version(game_semver)
-    -- for some unkown reason CA replaced default `string.find` with their own implementation that makes only `plain` searching
+    -- for some unknown reason CA replaced default `string.find` with their own implementation that makes only `plain` searching
     local find = string.find_lua or string.find
 
     -- v3.X.X
