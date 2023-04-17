@@ -90,7 +90,7 @@ function ExtractorsRegistry:register_table_extractor(table_name, columns, key_co
     end
 
 
-    is_valid = validators.validate_columns(columns, key_column_id, nullable_column_ids, self._log)
+    local is_valid = validators.validate_columns(columns, key_column_id, nullable_column_ids, self._log)
     if not is_valid then
         self._log:leave_context()
         return false
