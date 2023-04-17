@@ -61,10 +61,10 @@ function utils.get_db_address(logger)
     end
     
 
-    local is_success, err_msg, db_ptr = zlib.functools.safe(_get_db_address)
+    local is_success, err_msg, results = zlib.functools.safe(_get_db_address)
     if is_success then
         logger:debug('success'):leave_context()
-        return db_ptr --[[@as pointer]]
+        return results[1] --[[@as pointer]]
     end
     
     logger:debug('error:', err_msg):leave_context()
