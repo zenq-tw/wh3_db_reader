@@ -313,6 +313,7 @@ function DBReader:_build_table(table_meta, table_data, rows_count)
 end
 
 
+---@protected
 ---@param records table <Id, Record>
 ---@param indexes RawTableIndexes
 ---@return boolean is_valid, TableIndexes? prepared_indexes
